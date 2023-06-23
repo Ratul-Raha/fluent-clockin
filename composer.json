@@ -1,0 +1,16 @@
+{
+    "name": "ratul/fluent-clockin",
+    "description": "clockin",
+    "license": "GPLv2",
+    "autoload": {
+        "psr-4": {
+            "FluentClockin\\": "includes/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ratul Raha"
+        }
+    ],
+    "require": {}
+}

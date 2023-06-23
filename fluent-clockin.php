@@ -16,31 +16,27 @@
  * Domain Path:       /languages
  */
 
-add_action('admin_menu', function () {
-    
-    add_menu_page(
-        'Fluent Clockin',
-        'Fluent Clockin',
-        'manage_options',
-        'fluent_clockin',
-        'fluent_clockin_render'
-    );
-});
+use FluentClockin\PluginInit;
 
-function fluent_clockin_render()
-{
-    wp_enqueue_script('test_app_js', 'http://localhost:8888/resources/js/app.js', 'jquery', '3.0', false);
-    echo '<div id="fluent_clockin_app"></div>';
+ if ( ! defined('ABSPATH')) {
+    exit;
 }
+require_once __DIR__ . '/vendor/autoload.php';
 
 
-add_filter('script_loader_tag', 'test_add_module_to_script', 10, 3);
-
-function test_add_module_to_script($tag, $handle, $src)
-{
-    $handlers = ['test_app_js'];
-    if (in_array($handle, $handlers)) {
-        $tag = str_replace(' src', ' type="module" src', $tag);
+class Initial {
+    function __construct(){
+        new PluginInit();
     }
-    return $tag;
 }
+new Initial();
+
+
+
+
+
+
+
+
+
+
