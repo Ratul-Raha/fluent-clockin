@@ -15,6 +15,10 @@ class CustomPost
         add_action('save_post_video_player', [$this, 'save_video_player_meta_fields']);
 
         add_action('wp_ajax_add_video_player', [$this, 'add_video_player']);
+
+        add_action('wp_ajax_fetch_video_player', [$this, 'fetch_video_player']);
+
+        add_action('wp_ajax_save_video_player_setting', [$this, 'save_video_player_setting']);
     }
 
     function register_video_player_post_type()
@@ -121,14 +125,14 @@ class CustomPost
             if (isset($_POST['title'])) {
                 $title = sanitize_text_field($_POST['title']);
                 $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
-    
+
                 $post_id = wp_insert_post([
                     'post_title' => $title,
                     'post_content' => $description,
                     'post_type' => 'video_player',
                     'post_status' => 'publish'
                 ]);
-    
+
                 if ($post_id) {
                     wp_send_json_success('Video player added successfully.');
                 } else {
@@ -141,5 +145,51 @@ class CustomPost
             wp_send_json_error('Invalid request or nonce verification failed.');
         }
     }
-    
+    function fetch_video_player()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
+            global $wpdb;
+
+            // Perform your video player data retrieval logic here
+            $post_type = 'video_player';
+
+            $query = $wpdb->prepare("
+                SELECT *
+                FROM {$wpdb->prefix}posts
+                WHERE post_type = %s
+            ", $post_type);
+
+            $video_players = $wpdb->get_results($query, ARRAY_A);
+
+            if ($video_players) {
+                wp_send_json_success($video_players);
+            } else {
+                wp_send_json_error('No video players found');
+            }
+        } else {
+            wp_send_json_error('Invalid request');
+        }
+    }
+
+    function save_video_player_setting()
+    {
+
+        if (!$_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['nonce']) && !wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
+            wp_send_json_error('Invalid nonce.');
+        }
+
+        $video_player_id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+
+        $autoplay = isset($_POST['autoplay']) ? sanitize_text_field($_POST['autoplay']) : '';
+        $audio = isset($_POST['audio']) ? sanitize_text_field($_POST['audio']) : '';
+        $player_size = isset($_POST['playerSize']) ? sanitize_text_field($_POST['playerSize']) : '';
+        $url = isset($_POST['url']) ? esc_url_raw($_POST['url']) : '';
+
+        update_post_meta($video_player_id, 'autoplay', $autoplay);
+        update_post_meta($video_player_id, 'audio', $audio);
+        update_post_meta($video_player_id, 'player_size', $player_size);
+        update_post_meta($video_player_id, 'url', $url);
+
+        wp_send_json_success('Video player settings saved successfully.');
+    }
 }

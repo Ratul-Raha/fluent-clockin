@@ -7,23 +7,39 @@
       </div>
       <el-menu default-active="/dashboard" router>
         <el-menu-item index="/dashboard">
-          <i class="el-icon-house"></i>
+          <el-icon>
+            <House/>
+          </el-icon>
           <span slot="title">Dashboard</span>
         </el-menu-item>
         <el-menu-item index="" @click="openClockinModal">
-          <i class="el-icon-time"></i>
+            <el-icon>
+            <Clock/>
+          </el-icon>
           <span slot="title">Web ClockIn</span>
         </el-menu-item>
         <el-menu-item index="/web-clockout">
-          <i class="el-icon-time"></i>
+           <el-icon>
+            <Clock/>
+          </el-icon>
           <span slot="title">Web ClockOut</span>
         </el-menu-item>
         <el-menu-item index="" @click="openVideoPlayerModal">
-          <i class="el-icon-media"></i>
+            <el-icon>
+            <Plus/>
+          </el-icon>
           <span slot="title">Add Video Player</span>
         </el-menu-item>
+        <el-menu-item index="" @click="openVideoPlayersListModal">
+            <el-icon>
+            <List/>
+          </el-icon>
+          <span slot="title">Video Player List</span>
+        </el-menu-item>
         <el-menu-item index="/logout" @click="logout">
-          <i class="el-icon-switch-button"></i>
+            <el-icon>
+            <Key/>
+          </el-icon>
           <span slot="title">Log Out</span>
         </el-menu-item>
       </el-menu>
@@ -92,6 +108,86 @@
         </div>
       </div>
     </el-dialog>
+    <!--Video Players List Modal-->
+    <el-dialog
+      title="Video Players List"
+      v-model="videoPlayersListModalVisible"
+      width="50%"
+      @close="resetVideoPlayersList"
+    >
+      <!-- Render the video players list here -->
+      <el-table :data="videoPlayersList" border>
+        <el-table-column prop="id" label="ID">
+          <template #default="scope">
+            {{ scope.row.ID }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="title" label="Title">
+          <template #default="scope">
+            {{ scope.row.post_title }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="Description">
+          <template #default="scope">
+            {{ scope.row.post_content }}
+          </template>
+        </el-table-column>
+        <el-table-column label="Actions">
+          <template #default="scope">
+            <el-button type="primary" @click="editVideoPlayer(scope.row)"
+              ><el-icon> <Edit /> </el-icon
+            ></el-button>
+            <el-button type="danger" @click="deleteVideoPlayer(scope.row)">
+              <el-icon> <Delete /> </el-icon
+            ></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <!--EditPlayerModal-->
+    <el-dialog
+      title="Edit Video Player"
+      v-model="editVideoPlayerModalVisible"
+      width="30%"
+      @close="cancelEditVideoPlayerForm"
+    >
+      <div class="edit-video-player-modal">
+        <div class="form-group">
+          <span class="label">Autoplay:</span>
+          <el-radio-group v-model="editedVideoPlayer.autoplay">
+            <el-radio label="yes">Yes</el-radio>
+            <el-radio label="no">No</el-radio>
+          </el-radio-group>
+        </div>
+        <div class="form-group">
+          <span class="label">Audio:</span>
+          <el-radio-group v-model="editedVideoPlayer.audio">
+            <el-radio label="on">On</el-radio>
+            <el-radio label="off">Off</el-radio>
+          </el-radio-group>
+        </div>
+        <div class="form-group">
+          <span class="label">Player Size:</span>
+          <el-select v-model="editedVideoPlayer.size" placeholder="Select size">
+            <el-option label="Small" value="small"></el-option>
+            <el-option label="Medium" value="medium"></el-option>
+            <el-option label="Large" value="large"></el-option>
+          </el-select>
+        </div>
+        <div class="form-group">
+          <span class="label">Video URL:</span>
+          <el-input v-model="editedVideoPlayer.url" type="text"></el-input>
+          <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
+        </div>
+        <div class="modal-buttons">
+          <el-button type="primary" @click="saveEditedVideoPlayer"
+            >Save</el-button
+          >
+          <el-button @click="cancelEditVideoPlayerForm">Cancel</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -104,7 +200,14 @@ import {
   ElTable,
   ElTableColumn,
   ElDialog,
+  ElRadio,
+  ElRadioGroup,
+  ElSelect,
+  ElOption,
+  ElInput,
   ElButton,
+  ElNotification,
+  ElContainer,
 } from "element-plus";
 import { RouterLink } from "vue-router";
 import axios from "axios";
@@ -120,6 +223,13 @@ export default {
     ElDialog,
     ElButton,
     RouterLink,
+    ElNotification,
+    ElContainer,
+    ElRadio,
+    ElRadioGroup,
+    ElSelect,
+    ElOption,
+    ElInput,
   },
   data() {
     return {
@@ -140,10 +250,20 @@ export default {
       ],
       clockinModalVisible: false,
       videoPlayerModalVisible: false,
+      videoPlayersListModalVisible: false,
       videoPlayerForm: {
         title: "",
         description: "",
       },
+      editVideoPlayerModalVisible: false,
+      editedVideoPlayer: {
+        id: null,
+        autoplay: false,
+        audio: false,
+        size: "",
+        url: "",
+      },
+      videoPlayersList: [],
       currentDate: "",
       currentTime: "",
       currentLocation: "",
@@ -153,7 +273,7 @@ export default {
   },
   methods: {
     openVideoPlayerModal() {
-        console.log(clk_ajax.ajaxurl);
+      console.log(clk_ajax.ajaxurl);
       this.videoPlayerForm.title = "";
       this.videoPlayerForm.description = "";
       this.videoPlayerModalVisible = true;
@@ -163,15 +283,21 @@ export default {
         url: clk_ajax.ajaxurl,
         type: "POST",
         data: {
-            action: 'add_video_player',
-            nonce: clk_ajax.clk_nonce,
-            title: this.videoPlayerForm.title,
-            description: this.videoPlayerForm.description,
+          action: "add_video_player",
+          nonce: clk_ajax.clk_nonce,
+          title: this.videoPlayerForm.title,
+          description: this.videoPlayerForm.description,
         },
         beforeSend: function (xhr) {
-          xhr.setRequestHeader("X-Action", 'add_video_player');
+          xhr.setRequestHeader("X-Action", "add_video_player");
         },
         success: function (response) {
+          ElNotification({
+            title: "Prompt",
+            message: "Video Player added successfully",
+            duration: 0,
+          });
+          ß;
           console.log("Form submission successful:", response);
         },
         error: function (error) {
@@ -185,6 +311,63 @@ export default {
     cancelVideoPlayerForm() {
       this.videoPlayerModalVisible = false;
     },
+    openVideoPlayersListModal() {
+      this.videoPlayersListModalVisible = true;
+      jQuery.ajax({
+        url: clk_ajax.ajaxurl,
+        type: "POST",
+        data: {
+          action: "fetch_video_player",
+          nonce: clk_ajax.clk_nonce,
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-Action", "fetch_video_player");
+        },
+        success: (response) => {
+          const videoPlayers = response.data;
+          this.videoPlayersList = videoPlayers; // 'this' will refer to the Vue component instance
+        },
+        error: function (error) {
+          console.error("Data fetching failed:", error);
+        },
+      });
+    },
+    resetVideoPlayersList() {
+      this.videoPlayersListModalVisible = false;
+    },
+    editVideoPlayer(row) {
+      this.editVideoPlayerModalVisible = true;
+      this.editedVideoPlayer.id = row.ID;
+    },
+    cancelEditVideoPlayerForm() {
+      this.editVideoPlayerModalVisible = false;
+    },
+    saveEditedVideoPlayer() {
+        jQuery.ajax({
+        url: clk_ajax.ajaxurl,
+        type: "POST",
+        data: {
+          action: "save_video_player_setting",
+          nonce: clk_ajax.clk_nonce,
+          id: this.editedVideoPlayer.id,
+          autoplay: this.editedVideoPlayer.autoplay,
+          audio: this.editedVideoPlayer.audio,
+          size: this.editedVideoPlayer.size,
+          url: this.editedVideoPlayer.url
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-Action", "save_video_player_setting");
+        },
+        success: (response) => {
+          const videoPlayers = response.data;
+          this.videoPlayersList = videoPlayers;
+        },
+        error: function (error) {
+          console.error("Data fetching failed:", error);
+        },
+      });
+    },
+    deleteVideoPlayer() {},
     openClockinModal() {
       this.getClockinDateTime();
       this.getCurrentLocation();
