@@ -27,7 +27,11 @@ class PluginInit
 
         add_filter('script_loader_tag', [$this,'test_add_module_to_script'], 10, 3);
 
+    
+        
+
         new CustomPost();
+
     }
 
     function test_add_module_to_script($tag, $handle, $src)

@@ -8,78 +8,61 @@
       <el-menu default-active="/dashboard" router>
         <el-menu-item index="/dashboard">
           <el-icon>
-            <House/>
+            <House />
           </el-icon>
           <span slot="title">Dashboard</span>
         </el-menu-item>
-        <el-menu-item index="" @click="openClockinModal">
-            <el-icon>
-            <Clock/>
-          </el-icon>
-          <span slot="title">Web ClockIn</span>
-        </el-menu-item>
-        <el-menu-item index="/web-clockout">
-           <el-icon>
-            <Clock/>
-          </el-icon>
-          <span slot="title">Web ClockOut</span>
-        </el-menu-item>
         <el-menu-item index="" @click="openVideoPlayerModal">
-            <el-icon>
-            <Plus/>
+          <el-icon>
+            <Plus />
           </el-icon>
           <span slot="title">Add Video Player</span>
-        </el-menu-item>
-        <el-menu-item index="" @click="openVideoPlayersListModal">
-            <el-icon>
-            <List/>
-          </el-icon>
-          <span slot="title">Video Player List</span>
-        </el-menu-item>
-        <el-menu-item index="/logout" @click="logout">
-            <el-icon>
-            <Key/>
-          </el-icon>
-          <span slot="title">Log Out</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
     <el-main>
-      <h2 class="page-title">ClockIn Time</h2>
-      <el-table :data="clockinList" border>
-        <el-table-column prop="serialNo" label="Serial No"></el-table-column>
-        <el-table-column prop="date" label="Date"></el-table-column>
-        <el-table-column prop="time" label="Time"></el-table-column>
-        <el-table-column prop="location" label="Location"></el-table-column>
+      <h2 class="page-title">Video Players setting</h2>
+      <!-- Render the video players list here -->
+      <el-table :data="videoPlayersList" border>
+        <el-table-column prop="id" label="ID">
+          <template #default="scope">
+            {{ scope.row.ID }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="title" label="Title">
+          <template #default="scope">
+            {{ scope.row.post_title }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="Description">
+          <template #default="scope">
+            {{ scope.row.post_content }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="shortcode" label="Short Code">
+          <template #default="scope">
+            <div>
+              {{ scope.row.shortcode }}
+              <el-icon @click="copyShortcode(scope.row.shortcode)"
+                ><CopyDocument
+              /></el-icon>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="Actions">
+          <template #default="scope">
+            <el-button type="primary" @click="editVideoPlayer(scope.row)"
+              ><el-icon> <Edit /> </el-icon
+            ></el-button>
+            <el-button type="danger" @click="deleteVideoPlayer(scope.row)">
+              <el-icon> <Delete /> </el-icon
+            ></el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-main>
 
-    <!-- Clockin Modal -->
-    <el-dialog
-      title="ClockIn"
-      v-model="clockinModalVisible"
-      width="30%"
-      @close="resetClockinForm"
-    >
-      <div class="clockin-modal">
-        <div class="form-group">
-          <span class="label">Date:</span>
-          <span class="value">{{ currentDate }}</span>
-        </div>
-        <div class="form-group">
-          <span class="label">Time:</span>
-          <span class="value">{{ currentTime }}</span>
-        </div>
-        <div class="form-group">
-          <span class="label">Location:</span>
-          <span class="value">{{ currentLocation }}</span>
-        </div>
-        <div class="modal-buttons">
-          <el-button type="primary" @click="confirmClockin">Confirm</el-button>
-          <el-button @click="cancelClockin">Cancel</el-button>
-        </div>
-      </div>
-    </el-dialog>
     <!-- Video Player Modal -->
     <el-dialog
       title="Add Video Player"
@@ -108,77 +91,55 @@
         </div>
       </div>
     </el-dialog>
-    <!--Video Players List Modal-->
-    <el-dialog
-      title="Video Players List"
-      v-model="videoPlayersListModalVisible"
-      width="50%"
-      @close="resetVideoPlayersList"
-    >
-      <!-- Render the video players list here -->
-      <el-table :data="videoPlayersList" border>
-        <el-table-column prop="id" label="ID">
-          <template #default="scope">
-            {{ scope.row.ID }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="title" label="Title">
-          <template #default="scope">
-            {{ scope.row.post_title }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="description" label="Description">
-          <template #default="scope">
-            {{ scope.row.post_content }}
-          </template>
-        </el-table-column>
-        <el-table-column label="Actions">
-          <template #default="scope">
-            <el-button type="primary" @click="editVideoPlayer(scope.row)"
-              ><el-icon> <Edit /> </el-icon
-            ></el-button>
-            <el-button type="danger" @click="deleteVideoPlayer(scope.row)">
-              <el-icon> <Delete /> </el-icon
-            ></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
 
     <!--EditPlayerModal-->
     <el-dialog
-      title="Edit Video Player"
+      title="Edit Video Player Setting"
       v-model="editVideoPlayerModalVisible"
       width="30%"
       @close="cancelEditVideoPlayerForm"
     >
       <div class="edit-video-player-modal">
         <div class="form-group">
-          <span class="label">Autoplay:</span>
-          <el-radio-group v-model="editedVideoPlayer.autoplay">
-            <el-radio label="yes">Yes</el-radio>
-            <el-radio label="no">No</el-radio>
-          </el-radio-group>
+          <label class="label">Autoplay:</label>
+          <div class="form-field">
+            <el-radio-group v-model="editedVideoPlayer.autoplay">
+              <el-radio label="yes">Yes</el-radio>
+              <el-radio label="no">No</el-radio>
+            </el-radio-group>
+          </div>
         </div>
         <div class="form-group">
-          <span class="label">Audio:</span>
-          <el-radio-group v-model="editedVideoPlayer.audio">
-            <el-radio label="on">On</el-radio>
-            <el-radio label="off">Off</el-radio>
-          </el-radio-group>
+          <label class="label">Audio:</label>
+          <div class="form-field">
+            <el-radio-group v-model="editedVideoPlayer.audio">
+              <el-radio label="on">On</el-radio>
+              <el-radio label="off">Off</el-radio>
+            </el-radio-group>
+          </div>
         </div>
         <div class="form-group">
-          <span class="label">Player Size:</span>
-          <el-select v-model="editedVideoPlayer.size" placeholder="Select size">
-            <el-option label="Small" value="small"></el-option>
-            <el-option label="Medium" value="medium"></el-option>
-            <el-option label="Large" value="large"></el-option>
-          </el-select>
+          <label class="label">Player Size:</label>
+          <div class="form-field">
+            <el-select
+              v-model="editedVideoPlayer.player_size"
+              placeholder="Select size"
+            >
+              <el-option label="Small" value="small"></el-option>
+              <el-option label="Medium" value="medium"></el-option>
+              <el-option label="Large" value="large"></el-option>
+            </el-select>
+          </div>
         </div>
         <div class="form-group">
-          <span class="label">Video URL:</span>
-          <el-input v-model="editedVideoPlayer.url" type="text"></el-input>
-          <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
+          <label class="label">Video URL:</label>
+          <div class="form-field">
+            <el-input
+              v-model="editedVideoPlayer.video_url"
+              type="text"
+            ></el-input>
+            <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
+          </div>
         </div>
         <div class="modal-buttons">
           <el-button type="primary" @click="saveEditedVideoPlayer"
@@ -210,7 +171,6 @@ import {
   ElContainer,
 } from "element-plus";
 import { RouterLink } from "vue-router";
-import axios from "axios";
 
 export default {
   components: {
@@ -233,22 +193,6 @@ export default {
   },
   data() {
     return {
-      clockinList: [
-        {
-          serialNo: 1,
-          date: "2023-06-01",
-          time: "09:00 AM",
-          location: "Office",
-        },
-        { serialNo: 2, date: "2023-06-02", time: "08:30 AM", location: "Home" },
-        {
-          serialNo: 3,
-          date: "2023-06-03",
-          time: "10:15 AM",
-          location: "Client Site",
-        },
-      ],
-      clockinModalVisible: false,
       videoPlayerModalVisible: false,
       videoPlayersListModalVisible: false,
       videoPlayerForm: {
@@ -258,22 +202,22 @@ export default {
       editVideoPlayerModalVisible: false,
       editedVideoPlayer: {
         id: null,
-        autoplay: false,
-        audio: false,
-        size: "",
-        url: "",
+        autoplay: "",
+        audio: "",
+        player_size: "",
+        video_url: "",
       },
       videoPlayersList: [],
-      currentDate: "",
-      currentTime: "",
-      currentLocation: "",
       userProfileName: "Goutom Dash",
       avatarUrl: "path/to/avatar.png",
     };
   },
+  mounted() {
+    this.fetchVideoPlayers();
+  },
+
   methods: {
     openVideoPlayerModal() {
-      console.log(clk_ajax.ajaxurl);
       this.videoPlayerForm.title = "";
       this.videoPlayerForm.description = "";
       this.videoPlayerModalVisible = true;
@@ -297,7 +241,6 @@ export default {
             message: "Video Player added successfully",
             duration: 0,
           });
-          ß;
           console.log("Form submission successful:", response);
         },
         error: function (error) {
@@ -311,8 +254,7 @@ export default {
     cancelVideoPlayerForm() {
       this.videoPlayerModalVisible = false;
     },
-    openVideoPlayersListModal() {
-      this.videoPlayersListModalVisible = true;
+    fetchVideoPlayers() {
       jQuery.ajax({
         url: clk_ajax.ajaxurl,
         type: "POST",
@@ -332,18 +274,40 @@ export default {
         },
       });
     },
-    resetVideoPlayersList() {
-      this.videoPlayersListModalVisible = false;
-    },
     editVideoPlayer(row) {
       this.editVideoPlayerModalVisible = true;
       this.editedVideoPlayer.id = row.ID;
+
+      jQuery.ajax({
+        url: clk_ajax.ajaxurl,
+        type: "POST",
+        data: {
+          action: "fetch_video_player_setting",
+          nonce: clk_ajax.clk_nonce,
+          id: row.ID,
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-Action", "save_video_player_setting");
+        },
+        success: (response) => {
+          const videoPlayerSetting = response.data;
+          this.editedVideoPlayer.autoplay = videoPlayerSetting.autoplay[0];
+          this.editedVideoPlayer.audio = videoPlayerSetting.audio[0];
+          this.editedVideoPlayer.video_url = videoPlayerSetting.video_url[0];
+          this.editedVideoPlayer.player_size =
+            videoPlayerSetting.player_size[0];
+        },
+        error: function (error) {
+          console.error("Data fetching failed:", error);
+        },
+      });
     },
     cancelEditVideoPlayerForm() {
       this.editVideoPlayerModalVisible = false;
     },
     saveEditedVideoPlayer() {
-        jQuery.ajax({
+      console.log(this.editedVideoPlayer.player_size);
+      jQuery.ajax({
         url: clk_ajax.ajaxurl,
         type: "POST",
         data: {
@@ -352,8 +316,8 @@ export default {
           id: this.editedVideoPlayer.id,
           autoplay: this.editedVideoPlayer.autoplay,
           audio: this.editedVideoPlayer.audio,
-          size: this.editedVideoPlayer.size,
-          url: this.editedVideoPlayer.url
+          player_size: this.editedVideoPlayer.player_size,
+          video_url: this.editedVideoPlayer.video_url,
         },
         beforeSend: function (xhr) {
           xhr.setRequestHeader("X-Action", "save_video_player_setting");
@@ -367,43 +331,41 @@ export default {
         },
       });
     },
-    deleteVideoPlayer() {},
-    openClockinModal() {
-      this.getClockinDateTime();
-      this.getCurrentLocation();
-      this.clockinModalVisible = true;
-    },
-    resetClockinForm() {
-      this.currentDate = "";
-      this.currentTime = "";
-      this.currentLocation = "";
-    },
-    getClockinDateTime() {
-      const now = new Date();
-      console.log(now);
-      this.currentDate = now.toLocaleDateString();
-      this.currentTime = now.toLocaleTimeString();
-    },
-    async getCurrentLocation() {
-      try {
-        const response = await axios.get("https://ipinfo.io/json");
-        const { city, region, country, loc } = response.data;
-        const [latitude, longitude] = loc.split(",");
-        this.currentLocation = `${city}, ${region}, ${country} (${latitude}, ${longitude})`;
-      } catch (error) {
-        console.error("Error retrieving location:", error);
+    deleteVideoPlayer(row) {
+      if (confirm("Are you sure you want to delete this video player?")) {
+        jQuery.ajax({
+          url: clk_ajax.ajaxurl,
+          type: "POST",
+          data: {
+            action: "delete_video_player",
+            nonce: clk_ajax.clk_nonce,
+            id: row.ID,
+          },
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-Action", "delete_video_player");
+          },
+          success: (response) => {
+            ElNotification({
+              title: "Toast!",
+              message: "Video Player deleted successfully",
+              duration: 0,
+            });
+            this.fetchVideoPlayers();
+          },
+          error: function (error) {
+            console.error("Deleting failed:", error);
+          },
+        });
       }
     },
-    confirmClockin() {
-      // Perform clock-in logic here
-      console.log("ClockIn confirmed");
-      this.clockinModalVisible = false;
-    },
-    cancelClockin() {
-      this.clockinModalVisible = false;
-    },
-    logout() {
-      // Perform logout logic here
+    copyShortcode(shortcode) {
+      const el = document.createElement("textarea");
+      el.value = shortcode;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      this.$message.success("Shortcode copied to clipboard");
     },
   },
 };
@@ -467,4 +429,28 @@ export default {
 .value {
   margin-left: 10px;
 }
+
+.edit-video-player-modal .form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.edit-video-player-modal .form-group .label {
+  width: 120px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.edit-video-player-modal .form-field {
+  flex: 1;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
 </style>
