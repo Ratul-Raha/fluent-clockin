@@ -222,8 +222,6 @@ class CustomPost
         }
     }
 
-
-
     function save_video_player_setting()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
@@ -235,6 +233,11 @@ class CustomPost
         $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
         $description = isset($_POST['description']) ? sanitize_text_field($_POST['description']) : '';
 
+
+        if (empty($title) || empty($_POST['autoplay']) || empty($_POST['audio']) || empty($_POST['controls']) || empty($_POST['player_size']) || empty($_POST['video_url'])) {
+            wp_send_json_error('All fields are required except Description.');
+        }
+
         $post_data = array(
             'ID' => $video_player_id,
             'post_title' => $title,
@@ -242,11 +245,11 @@ class CustomPost
         );
         wp_update_post($post_data);
 
-        $autoplay = isset($_POST['autoplay']) ? sanitize_text_field($_POST['autoplay']) : '';
-        $audio = isset($_POST['audio']) ? sanitize_text_field($_POST['audio']) : '';
-        $controls = isset($_POST['controls']) ? sanitize_text_field($_POST['controls']) : '';
-        $player_size = isset($_POST['player_size']) ? sanitize_text_field($_POST['player_size']) : '';
-        $url = isset($_POST['video_url']) ? esc_url_raw($_POST['video_url']) : '';
+        $autoplay = sanitize_text_field($_POST['autoplay']);
+        $audio = sanitize_text_field($_POST['audio']);
+        $controls = sanitize_text_field($_POST['controls']);
+        $player_size = sanitize_text_field($_POST['player_size']);
+        $url = esc_url_raw($_POST['video_url']);
 
         update_post_meta($video_player_id, 'autoplay', $autoplay);
         update_post_meta($video_player_id, 'audio', $audio);
@@ -254,12 +257,13 @@ class CustomPost
         update_post_meta($video_player_id, 'video_url', $url);
         update_post_meta($video_player_id, 'controls', $controls);
 
-        // Prepare response data
+
         $response_data = array(
             'success' => true,
         );
         wp_send_json($response_data);
     }
+
 
     function fetch_video_player_setting()
     {
@@ -277,7 +281,7 @@ class CustomPost
         $autoplay = get_post_meta($video_player_id, 'autoplay', true);
         $video_url = get_post_meta($video_player_id, 'video_url', true);
         $player_size = get_post_meta($video_player_id, 'player_size', true);
-        $controls= get_post_meta($video_player_id, 'controls', true);
+        $controls = get_post_meta($video_player_id, 'controls', true);
         $title = get_the_title($video_player_id);
         $description = get_post_field('post_content', $video_player_id);
 
@@ -285,10 +289,10 @@ class CustomPost
             'success' => true,
             'title' => $title,
             'description' => $description,
-            'audio'=> $audio,
+            'audio' => $audio,
             'autoplay' => $autoplay,
-            'controls'=>$controls,
-            'player_size'=> $player_size,
+            'controls' => $controls,
+            'player_size' => $player_size,
             'video_url' => $video_url,
         );
         wp_send_json($response);
