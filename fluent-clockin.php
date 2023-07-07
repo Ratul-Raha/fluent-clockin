@@ -1,9 +1,9 @@
 <?php
 
 /*
- * Plugin Name:       Fluent ClockIn
+ * Plugin Name:       Fluent Embed
  * Plugin URI:        https://example.com/plugins/the-basics/
- * Description:       Attendance made easy
+ * Description:       Video embedding made easy
  * Version:           1.0.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
@@ -16,7 +16,7 @@
  * Domain Path:       /languages
  */
 
-use FluentClockin\PluginInit;
+use FluentEmbed\PluginInit;
 
  if ( ! defined('ABSPATH')) {
     exit;
@@ -31,13 +31,3 @@ class Initial {
     }
 }
 new Initial();
-
-
-
-
-
-
-
-
-
-

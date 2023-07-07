@@ -1,6 +1,6 @@
 <?php
 
-namespace FluentClockin;
+namespace FluentEmbed;
 
 class PluginInit
 {

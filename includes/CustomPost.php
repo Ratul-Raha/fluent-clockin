@@ -1,6 +1,6 @@
 <?php
 
-namespace FluentClockin;
+namespace FluentEmbed;
 
 class CustomPost
 {
@@ -67,26 +67,25 @@ class CustomPost
                 $query_params = array();
                 if ($autoplay === 'yes') {
                     $query_params[] = 'autoplay=1&modestbranding=1&rel=0&cc_load_policy=0';
+                } else if ($autoplay === 'no') {
+                    $query_params[] = 'autoplay=0&modestbranding=1&rel=0&cc_load_policy=0';
                 }
                 if ($audio === 'off') {
-                    $query_params[] = 'mute=1';
+                    $query_params[] = 'muted';
                 }
                 if ($controls === 'off') {
                     $query_params[] = 'controls=0';
                 }
-
                 $aspect_ratio = 0.5625;
                 $player_height = round(intval($player_width) * $aspect_ratio);
-
                 $embedded_url = 'https://www.youtube.com/embed/' . $video_id;
                 if (!empty($query_params)) {
                     $embedded_url .= '?' . implode('&', $query_params);
                 }
-
-                $output = '<iframe width="' . $player_width . '" height="' . $player_height . '"
+                $output = '<div class="video-player">
+                <iframe width="' . $player_width . '" height="' . $player_height . '"
             src="' . $embedded_url . '">
-            </iframe>';
-
+            </iframe></div>';
                 return $output;
             }
 
