@@ -233,7 +233,7 @@ export default {
       },
       videoPlayersList: [],
       userProfileName: "Goutom Dash",
-      avatarUrl: "path/to/avatar.png",
+      avatarUrl: "",
     };
   },
   mounted() {
