@@ -23,7 +23,7 @@
     <el-main>
       <h2 class="page-title">Video Players setting</h2>
       <!-- Render the video players list here -->
-      <el-table :data="videoPlayersList" border>
+      <el-table :data="displayedVideoPlayers" border>
         <el-table-column prop="id" label="ID">
           <template #default="scope">
             {{ scope.row.ID }}
@@ -60,6 +60,14 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @size-change="handlePaginationSizeChange"
+        @current-change="handlePaginationCurrentChange"
+        :current-page="currentPage"
+        :page-size="pageSize"
+        :total="totalRows"
+        style="display: flex; align-items: baseline;"
+      ></el-pagination>
     </el-main>
 
     <!-- Video Player Modal -->
@@ -192,6 +200,7 @@ import {
   ElButton,
   ElNotification,
   ElContainer,
+  ElPagination,
 } from "element-plus";
 import { RouterLink } from "vue-router";
 
@@ -216,6 +225,10 @@ export default {
   },
   data() {
     return {
+      currentPage: 1,
+      pageSize: 5,
+      displayedVideoPlayers: [],
+      totalRows:0,
       videoPlayerModalVisible: false,
       videoPlayersListModalVisible: false,
       videoPlayerForm: {
@@ -241,6 +254,14 @@ export default {
   },
 
   methods: {
+    handlePaginationSizeChange(newSize) {
+      this.pageSize = newSize;
+      this.fetchVideoPlayers();
+    },
+    handlePaginationCurrentChange(newPage) {
+      this.currentPage = newPage;
+      this.fetchVideoPlayers();
+    },
     openVideoPlayerModal() {
       this.videoPlayerForm.title = "";
       this.videoPlayerForm.description = "";
@@ -290,7 +311,11 @@ export default {
         },
         success: (response) => {
           const videoPlayers = response.data;
-          this.videoPlayersList = videoPlayers;
+          this.totalRows = videoPlayers.length;
+
+          const start = (this.currentPage - 1) * this.pageSize;
+          const end = start + this.pageSize;
+          this.displayedVideoPlayers = videoPlayers.slice(start, end);
         },
         error: function (error) {
           console.error("Data fetching failed:", error);
