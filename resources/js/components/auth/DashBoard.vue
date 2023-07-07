@@ -320,11 +320,9 @@ export default {
             videoPlayerSetting.video_url.length > 0
               ? videoPlayerSetting.video_url[0]
               : "";
-          this.editedVideoPlayer.player_size =
-            Array.isArray(videoPlayerSetting.player_size) &&
-            videoPlayerSetting.autoplay.player_size > 0
-              ? videoPlayerSetting.player_size[0]
-              : "";
+          this.editedVideoPlayer.player_size = videoPlayerSetting.player_size[0];
+            
+           
           this.editedVideoPlayer.title = title;
           this.editedVideoPlayer.description = description;
         },
