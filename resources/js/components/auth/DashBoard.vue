@@ -100,7 +100,7 @@
     >
       <div class="edit-video-player-modal">
         <div class="form-group">
-          <label class="label">Title:</label>
+          <label class="label">Title*:</label>
           <div class="form-field">
             <el-input v-model="editedVideoPlayer.title" type="text"></el-input>
           </div>
@@ -115,7 +115,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="label">Autoplay:</label>
+          <label class="label">Autoplay*:</label>
           <div class="form-field">
             <el-radio-group v-model="editedVideoPlayer.autoplay">
               <el-radio label="yes">Yes</el-radio>
@@ -124,7 +124,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="label">Audio:</label>
+          <label class="label">Audio*:</label>
           <div class="form-field">
             <el-radio-group v-model="editedVideoPlayer.audio">
               <el-radio label="on">On</el-radio>
@@ -133,7 +133,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="label">Controls:</label>
+          <label class="label">Controls*:</label>
           <div class="form-field">
             <el-radio-group v-model="editedVideoPlayer.controls">
               <el-radio label="on">On</el-radio>
@@ -142,7 +142,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="label">Player Size:</label>
+          <label class="label">Player Size*:</label>
           <div class="form-field">
             <el-select
               v-model="editedVideoPlayer.player_size"
@@ -155,7 +155,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="label">Video URL:</label>
+          <label class="label">Video URL*:</label>
           <div class="form-field">
             <el-input
               v-model="editedVideoPlayer.video_url"
@@ -331,6 +331,28 @@ export default {
       this.editVideoPlayerModalVisible = false;
     },
     saveEditedVideoPlayer() {
+      const requiredFields = [
+        "title",
+        "video_url",
+        "autoplay",
+        "audio",
+        "player_size",
+        "controls",
+      ];
+      const isFieldsValid = requiredFields.every((field) => {
+        const fieldValue = this.editedVideoPlayer[field];
+        return fieldValue && fieldValue.trim() !== "";
+      });
+
+      if (!isFieldsValid) {
+        ElNotification({
+          title: "Error",
+          message: "Please fill in all the required fields.",
+          type: "error",
+        });
+        return;
+      }
+
       jQuery.ajax({
         url: clk_ajax.ajaxurl,
         type: "POST",
@@ -351,14 +373,20 @@ export default {
         },
         success: (response) => {
           ElNotification({
-            title: "Toast!",
+            title: "Success!",
             message: "Video Player Settings are saved!",
             duration: 0,
+            type: "success",
           });
           this.fetchVideoPlayers();
           this.editVideoPlayerModalVisible = false;
         },
         error: function (error) {
+          ElNotification({
+            title: "Error",
+            message: error,
+            type: "error",
+          });
           console.error("Data fetching failed:", error);
         },
       });
