@@ -7,15 +7,15 @@ import DashBoard from './js/components/auth/DashBoard.vue';
 const routes = [
   {
     path: '/',
-    component: RegistrationForm
+    component: DashBoard
   },
   {
     path: '/login',
     component: LoginForm
   },
   {
-    path: '/dashboard',
-    component: DashBoard
+    path: '/register',
+    component: RegistrationForm
   },
 
 ];

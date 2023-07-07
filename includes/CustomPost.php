@@ -39,6 +39,7 @@ class CustomPost
         $autoplay = get_post_meta($atts['id'], 'autoplay', true);
         $audio = get_post_meta($atts['id'], 'audio', true);
         $player_size = get_post_meta($atts['id'], 'player_size', true);
+        $controls = get_post_meta($atts['id'], 'controls', true);
 
         $output = '';
 
@@ -65,30 +66,32 @@ class CustomPost
 
                 $query_params = array();
                 if ($autoplay === 'yes') {
-                    $query_params[] = 'autoplay=1';
+                    $query_params[] = 'autoplay=1&modestbranding=1&rel=0&cc_load_policy=0';
                 }
                 if ($audio === 'off') {
                     $query_params[] = 'mute=1';
                 }
+                if ($controls === 'off') {
+                    $query_params[] = 'controls=0';
+                }
 
-                $aspect_ratio = 0.5625; 
-                $player_height = round($player_width * $aspect_ratio);
+                $aspect_ratio = 0.5625;
+                $player_height = round(intval($player_width) * $aspect_ratio);
 
-                
                 $embedded_url = 'https://www.youtube.com/embed/' . $video_id;
                 if (!empty($query_params)) {
                     $embedded_url .= '?' . implode('&', $query_params);
                 }
-               
+
                 $output = '<iframe width="' . $player_width . '" height="' . $player_height . '"
-                src="' . $embedded_url . '">
-                </iframe>';
+            src="' . $embedded_url . '">
+            </iframe>';
 
                 return $output;
             }
 
             $output .= '<div class="video-player">';
-            $output .= '<video src="' . $video_url . '" controls';
+            $output .= '<video src="' . $video_url . '"';
 
             if ($autoplay === 'yes') {
                 $output .= ' autoplay';
@@ -97,6 +100,11 @@ class CustomPost
             if ($audio === 'off') {
                 $output .= ' muted';
             }
+
+            if ($controls === 'on') {
+                $output .= ' controls';
+            }
+
             $output .= ' style="width: ' . $player_width . '" >';
             $output .= '</video>';
             $output .= '</div>';
@@ -106,6 +114,7 @@ class CustomPost
 
         return  $output;
     }
+
 
     function register_video_player_post_type()
     {
@@ -235,6 +244,7 @@ class CustomPost
 
         $autoplay = isset($_POST['autoplay']) ? sanitize_text_field($_POST['autoplay']) : '';
         $audio = isset($_POST['audio']) ? sanitize_text_field($_POST['audio']) : '';
+        $controls = isset($_POST['controls']) ? sanitize_text_field($_POST['controls']) : '';
         $player_size = isset($_POST['player_size']) ? sanitize_text_field($_POST['player_size']) : '';
         $url = isset($_POST['video_url']) ? esc_url_raw($_POST['video_url']) : '';
 
@@ -242,6 +252,7 @@ class CustomPost
         update_post_meta($video_player_id, 'audio', $audio);
         update_post_meta($video_player_id, 'player_size', $player_size);
         update_post_meta($video_player_id, 'video_url', $url);
+        update_post_meta($video_player_id, 'controls', $controls);
 
         // Prepare response data
         $response_data = array(
@@ -262,15 +273,23 @@ class CustomPost
         }
 
         $video_player_id = $_POST['id'];
-        $video_player_setting = get_post_meta($video_player_id);
+        $audio = get_post_meta($video_player_id, 'audio', true);
+        $autoplay = get_post_meta($video_player_id, 'autoplay', true);
+        $video_url = get_post_meta($video_player_id, 'video_url', true);
+        $player_size = get_post_meta($video_player_id, 'player_size', true);
+        $controls= get_post_meta($video_player_id, 'controls', true);
         $title = get_the_title($video_player_id);
         $description = get_post_field('post_content', $video_player_id);
 
         $response = array(
             'success' => true,
-            'data' => $video_player_setting,
             'title' => $title,
             'description' => $description,
+            'audio'=> $audio,
+            'autoplay' => $autoplay,
+            'controls'=>$controls,
+            'player_size'=> $player_size,
+            'video_url' => $video_url,
         );
         wp_send_json($response);
     }

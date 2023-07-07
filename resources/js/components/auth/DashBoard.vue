@@ -133,6 +133,15 @@
           </div>
         </div>
         <div class="form-group">
+          <label class="label">Controls:</label>
+          <div class="form-field">
+            <el-radio-group v-model="editedVideoPlayer.controls">
+              <el-radio label="on">On</el-radio>
+              <el-radio label="off">Off</el-radio>
+            </el-radio-group>
+          </div>
+        </div>
+        <div class="form-group">
           <label class="label">Player Size:</label>
           <div class="form-field">
             <el-select
@@ -220,6 +229,7 @@ export default {
         audio: "",
         player_size: "",
         video_url: "",
+        controls: "",
       },
       videoPlayersList: [],
       userProfileName: "Goutom Dash",
@@ -304,27 +314,13 @@ export default {
           xhr.setRequestHeader("X-Action", "fetch_video_player_setting");
         },
         success: (response) => {
-          const videoPlayerSetting = response.data;
-          const title = response.title;
-          const description = response.description;
-          this.editedVideoPlayer.autoplay =
-            Array.isArray(videoPlayerSetting.autoplay) &&
-            videoPlayerSetting.autoplay.length > 0
-              ? videoPlayerSetting.autoplay[0]
-              : "";
-          this.editedVideoPlayer.audio = Array.isArray(videoPlayerSetting.audio) &&
-            videoPlayerSetting.audio.length > 0
-              ? videoPlayerSetting.audio[0]
-              : "";
-          this.editedVideoPlayer.video_url = Array.isArray(videoPlayerSetting.video_url) &&
-            videoPlayerSetting.video_url.length > 0
-              ? videoPlayerSetting.video_url[0]
-              : "";
-          this.editedVideoPlayer.player_size = videoPlayerSetting.player_size[0];
-            
-           
-          this.editedVideoPlayer.title = title;
-          this.editedVideoPlayer.description = description;
+          this.editedVideoPlayer.title = response.title;
+          this.editedVideoPlayer.description = response.description;
+          this.editedVideoPlayer.autoplay = response.autoplay;
+          this.editedVideoPlayer.audio = response.audio;
+          this.editedVideoPlayer.video_url = response.video_url;
+          this.editedVideoPlayer.player_size = response.player_size;
+          this.editedVideoPlayer.controls = response.controls;
         },
         error: function (error) {
           console.error("Data fetching failed:", error);
@@ -348,6 +344,7 @@ export default {
           video_url: this.editedVideoPlayer.video_url,
           title: this.editedVideoPlayer.title,
           description: this.editedVideoPlayer.description,
+          controls: this.editedVideoPlayer.controls,
         },
         beforeSend: function (xhr) {
           xhr.setRequestHeader("X-Action", "save_video_player_setting");
