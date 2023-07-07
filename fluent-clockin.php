@@ -23,6 +23,7 @@ use FluentClockin\PluginInit;
 }
 require_once __DIR__ . '/vendor/autoload.php';
 
+define('FLUENTCOLCKIN_PLUIN_DIR_URL', plugin_dir_url(__FILE__));
 
 class Initial {
     function __construct(){

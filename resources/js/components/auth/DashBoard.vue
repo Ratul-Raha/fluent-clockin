@@ -49,7 +49,6 @@
             </div>
           </template>
         </el-table-column>
-
         <el-table-column label="Actions">
           <template #default="scope">
             <el-button type="primary" @click="editVideoPlayer(scope.row)"
@@ -100,6 +99,21 @@
       @close="cancelEditVideoPlayerForm"
     >
       <div class="edit-video-player-modal">
+        <div class="form-group">
+          <label class="label">Title:</label>
+          <div class="form-field">
+            <el-input v-model="editedVideoPlayer.title" type="text"></el-input>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label">Description:</label>
+          <div class="form-field">
+            <el-input
+              v-model="editedVideoPlayer.description"
+              type="text"
+            ></el-input>
+          </div>
+        </div>
         <div class="form-group">
           <label class="label">Autoplay:</label>
           <div class="form-field">
@@ -235,19 +249,18 @@ export default {
         beforeSend: function (xhr) {
           xhr.setRequestHeader("X-Action", "add_video_player");
         },
-        success: function (response) {
+        success: (response) => {
           ElNotification({
-            title: "Prompt",
+            title: "Toast!",
             message: "Video Player added successfully",
             duration: 0,
           });
-          console.log("Form submission successful:", response);
+          this.fetchVideoPlayers();
         },
         error: function (error) {
           console.error("Form submission failed:", error);
         },
       });
-
       this.videoPlayerModalVisible = false;
     },
 
@@ -267,13 +280,14 @@ export default {
         },
         success: (response) => {
           const videoPlayers = response.data;
-          this.videoPlayersList = videoPlayers; // 'this' will refer to the Vue component instance
+          this.videoPlayersList = videoPlayers;
         },
         error: function (error) {
           console.error("Data fetching failed:", error);
         },
       });
     },
+
     editVideoPlayer(row) {
       this.editVideoPlayerModalVisible = true;
       this.editedVideoPlayer.id = row.ID;
@@ -287,15 +301,32 @@ export default {
           id: row.ID,
         },
         beforeSend: function (xhr) {
-          xhr.setRequestHeader("X-Action", "save_video_player_setting");
+          xhr.setRequestHeader("X-Action", "fetch_video_player_setting");
         },
         success: (response) => {
           const videoPlayerSetting = response.data;
-          this.editedVideoPlayer.autoplay = videoPlayerSetting.autoplay[0];
-          this.editedVideoPlayer.audio = videoPlayerSetting.audio[0];
-          this.editedVideoPlayer.video_url = videoPlayerSetting.video_url[0];
+          const title = response.title;
+          const description = response.description;
+          this.editedVideoPlayer.autoplay =
+            Array.isArray(videoPlayerSetting.autoplay) &&
+            videoPlayerSetting.autoplay.length > 0
+              ? videoPlayerSetting.autoplay[0]
+              : "";
+          this.editedVideoPlayer.audio = Array.isArray(videoPlayerSetting.audio) &&
+            videoPlayerSetting.audio.length > 0
+              ? videoPlayerSetting.audio[0]
+              : "";
+          this.editedVideoPlayer.video_url = Array.isArray(videoPlayerSetting.video_url) &&
+            videoPlayerSetting.video_url.length > 0
+              ? videoPlayerSetting.video_url[0]
+              : "";
           this.editedVideoPlayer.player_size =
-            videoPlayerSetting.player_size[0];
+            Array.isArray(videoPlayerSetting.player_size) &&
+            videoPlayerSetting.autoplay.player_size > 0
+              ? videoPlayerSetting.player_size[0]
+              : "";
+          this.editedVideoPlayer.title = title;
+          this.editedVideoPlayer.description = description;
         },
         error: function (error) {
           console.error("Data fetching failed:", error);
@@ -306,7 +337,6 @@ export default {
       this.editVideoPlayerModalVisible = false;
     },
     saveEditedVideoPlayer() {
-      console.log(this.editedVideoPlayer.player_size);
       jQuery.ajax({
         url: clk_ajax.ajaxurl,
         type: "POST",
@@ -318,13 +348,20 @@ export default {
           audio: this.editedVideoPlayer.audio,
           player_size: this.editedVideoPlayer.player_size,
           video_url: this.editedVideoPlayer.video_url,
+          title: this.editedVideoPlayer.title,
+          description: this.editedVideoPlayer.description,
         },
         beforeSend: function (xhr) {
           xhr.setRequestHeader("X-Action", "save_video_player_setting");
         },
         success: (response) => {
-          const videoPlayers = response.data;
-          this.videoPlayersList = videoPlayers;
+          ElNotification({
+            title: "Toast!",
+            message: "Video Player Settings are saved!",
+            duration: 0,
+          });
+          this.fetchVideoPlayers();
+          this.editVideoPlayerModalVisible = false;
         },
         error: function (error) {
           console.error("Data fetching failed:", error);
@@ -452,5 +489,4 @@ export default {
   justify-content: flex-end;
   margin-top: 20px;
 }
-
 </style>
