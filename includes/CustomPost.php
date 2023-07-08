@@ -66,15 +66,16 @@ class CustomPost
 
                 $query_params = array();
                 if ($autoplay === 'yes') {
-                    $query_params[] = 'autoplay=1&modestbranding=1&rel=0&cc_load_policy=0';
+                    $query_params[] = 'autoplay=1';
                 } else if ($autoplay === 'no') {
                     $query_params[] = 'autoplay=0&modestbranding=1&rel=0&cc_load_policy=0';
                 }
-                if ($audio === 'off') {
-                    $query_params[] = 'muted';
-                }
                 if ($controls === 'off') {
                     $query_params[] = 'controls=0';
+                }
+
+                if ($audio === 'off') {
+                    $query_params[] = 'mute=1';
                 }
                 $aspect_ratio = 0.5625;
                 $player_height = round(intval($player_width) * $aspect_ratio);
@@ -232,7 +233,6 @@ class CustomPost
         $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
         $description = isset($_POST['description']) ? sanitize_text_field($_POST['description']) : '';
 
-
         if (empty($title) || empty($_POST['autoplay']) || empty($_POST['audio']) || empty($_POST['controls']) || empty($_POST['player_size']) || empty($_POST['video_url'])) {
             wp_send_json_error('All fields are required except Description.');
         }
@@ -256,12 +256,39 @@ class CustomPost
         update_post_meta($video_player_id, 'video_url', $url);
         update_post_meta($video_player_id, 'controls', $controls);
 
+        // Check if all post meta data is available
+        $post_meta_data = array(
+            'autoplay' => $autoplay,
+            'audio' => $audio,
+            'controls' => $controls,
+            'player_size' => $player_size,
+            'video_url' => $url,
+        );
+        $has_all_post_meta = !in_array('', $post_meta_data, true);
+
+        // Generate the shortcode or "Add setting first" message
+        $shortcode = $has_all_post_meta ? '[video_player id="' . $video_player_id . '"]' : 'Add setting first';
+
+        // Retrieve the updated video player data
+        $updated_video_player = array(
+            'id' => $video_player_id,
+            'autoplay' => $autoplay,
+            'audio' => $audio,
+            'controls' => $controls,
+            'player_size' => $player_size,
+            'video_url' => $url,
+            'post_title' => $title,
+            'post_content' => $description,
+            'shortcode' => $shortcode, // Include the shortcode or "Add setting first" message
+        );
 
         $response_data = array(
             'success' => true,
+            'data' => $updated_video_player, // Include the updated video player data in the response
         );
         wp_send_json($response_data);
     }
+
 
 
     function fetch_video_player_setting()

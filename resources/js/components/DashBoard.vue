@@ -5,8 +5,8 @@
         <el-avatar :src="avatarUrl" size="large"></el-avatar>
         <div class="user-name">{{ userProfileName }}</div>
       </div>
-      <el-menu default-active="/dashboard" router>
-        <el-menu-item index="/dashboard">
+      <el-menu default-active="/" router>
+        <el-menu-item index="/">
           <el-icon>
             <House />
           </el-icon>
@@ -24,22 +24,22 @@
       <h2 class="page-title">Video Players setting</h2>
       <!-- Render the video players list here -->
       <el-table :data="displayedVideoPlayers" border>
-        <el-table-column prop="id" label="ID">
+        <el-table-column prop="ID" label="ID" sortable>
           <template #default="scope">
-            {{ scope.row.ID }}
+            {{ scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="Title">
+        <el-table-column prop="title" label="Title" sortable>
           <template #default="scope">
             {{ scope.row.post_title }}
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="Description">
+        <el-table-column prop="post_content" label="Description" sortable>
           <template #default="scope">
             {{ scope.row.post_content }}
           </template>
         </el-table-column>
-        <el-table-column prop="shortcode" label="Short Code">
+        <el-table-column prop="shortcode" label="Short Code" sortable>
           <template #default="scope">
             <div>
               {{ scope.row.shortcode }}
@@ -52,21 +52,22 @@
         <el-table-column label="Actions">
           <template #default="scope">
             <el-button type="primary" @click="editVideoPlayer(scope.row)"
-              ><el-icon> <Edit /> </el-icon
+              ><el-icon><Edit /></el-icon
             ></el-button>
-            <el-button type="danger" @click="deleteVideoPlayer(scope.row)">
-              <el-icon> <Delete /> </el-icon
+            <el-button type="danger" @click="deleteVideoPlayer(scope.row)"
+              ><el-icon><Delete /></el-icon
             ></el-button>
           </template>
         </el-table-column>
       </el-table>
+
       <el-pagination
         @size-change="handlePaginationSizeChange"
         @current-change="handlePaginationCurrentChange"
         :current-page="currentPage"
         :page-size="pageSize"
         :total="totalRows"
-        style="display: flex; align-items: baseline;"
+        style="display: flex; align-items: baseline"
       ></el-pagination>
     </el-main>
 
@@ -172,6 +173,10 @@
             <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
           </div>
         </div>
+        <el-text style="color: red"
+          >For youtube video policy, autoplay can't start with audio is
+          on</el-text
+        >
         <div class="modal-buttons">
           <el-button type="primary" @click="saveEditedVideoPlayer"
             >Save</el-button
@@ -228,7 +233,7 @@ export default {
       currentPage: 1,
       pageSize: 5,
       displayedVideoPlayers: [],
-      totalRows:0,
+      totalRows: 0,
       videoPlayerModalVisible: false,
       videoPlayersListModalVisible: false,
       videoPlayerForm: {
@@ -284,7 +289,7 @@ export default {
           ElNotification({
             title: "Toast!",
             message: "Video Player added successfully",
-            duration: 0,
+            duration: 2,
           });
           this.fetchVideoPlayers();
         },
@@ -400,10 +405,19 @@ export default {
           ElNotification({
             title: "Success!",
             message: "Video Player Settings are saved!",
-            duration: 0,
+            duration: 2000,
             type: "success",
           });
-          this.fetchVideoPlayers();
+
+          const updatedVideoPlayerIndex = [
+            ...this.displayedVideoPlayers,
+          ].findIndex((vp) => vp.ID === this.editedVideoPlayer.id);
+
+          if (updatedVideoPlayerIndex !== -1) {
+            const updatedVideoPlayers = [...this.displayedVideoPlayers]; // Create a non-proxy array
+            updatedVideoPlayers[updatedVideoPlayerIndex] = response.data;
+            this.displayedVideoPlayers = updatedVideoPlayers; // Assign the updated array back to the proxy property
+          }
           this.editVideoPlayerModalVisible = false;
         },
         error: function (error) {
@@ -433,7 +447,7 @@ export default {
             ElNotification({
               title: "Toast!",
               message: "Video Player deleted successfully",
-              duration: 0,
+              duration: 2,
             });
             this.fetchVideoPlayers();
           },

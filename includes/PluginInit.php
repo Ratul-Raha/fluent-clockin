@@ -9,10 +9,10 @@ class PluginInit
         // Creating admin menu and rendering the app 
         add_action('admin_menu', function () {
             add_menu_page(
-                'Fluent Clockin',
-                'Fluent Clockin',
+                'Fluent Embed',
+                'Fluent Embed',
                 'manage_options',
-                'fluent_clockin',
+                'fluent_embed',
                 function () {
                     wp_enqueue_script('test_app_js', 'http://localhost:8888/resources/js/app.js', 'jquery', '3.0', false);
                     echo '<div id="fluent_clockin_app"></div>';
@@ -27,9 +27,6 @@ class PluginInit
 
         add_filter('script_loader_tag', [$this,'test_add_module_to_script'], 10, 3);
 
-    
-        
-
         new CustomPost();
 
     }
@@ -42,5 +39,4 @@ class PluginInit
         }
         return $tag;
     }
-
 }

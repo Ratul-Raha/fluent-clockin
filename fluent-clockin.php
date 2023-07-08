@@ -30,4 +30,5 @@ class Initial {
         new PluginInit();
     }
 }
+
 new Initial();

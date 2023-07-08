@@ -8,12 +8,6 @@ export default defineConfig({
   plugins: 
   [
     vue(),
-    // liveReload(`${__dirname}/**/*\.php`),
-    // copy({
-    //   targets: [
-    //     { src: 'src/assets/*', dest: 'public/img' },
-    //   ]
-    // })
   ],
 
   build: {
@@ -23,7 +17,6 @@ export default defineConfig({
     // publicDir: 'public',
     emptyOutDir: true, // delete the contents of the output directory before each build
 
- // https://rollupjs.org/guide/en/#big-list-of-options
     rollupOptions: {
       input: [
         'resources/js/app.js',

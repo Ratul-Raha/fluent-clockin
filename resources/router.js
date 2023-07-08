@@ -1,7 +1,7 @@
 import {createWebHashHistory, createRouter} from "vue-router";
 import RegistrationForm from './js/components/auth/RegistrationForm.vue';
 import LoginForm from './js/components/auth/LoginForm.vue';
-import DashBoard from './js/components/auth/DashBoard.vue';
+import DashBoard from './js/components/DashBoard.vue';
 
 
 const routes = [
