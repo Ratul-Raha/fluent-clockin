@@ -103,7 +103,6 @@ class CustomPost
         return  $output;
     }
 
-
     function clk_register_video_player_post_type()
     {
 
@@ -138,7 +137,13 @@ class CustomPost
                     'post_status' => 'publish'
                 ]);
                 if ($post_id) {
-                    wp_send_json_success('Video player added successfully.');
+                    $response_data = array(
+                        'success' => true,
+                        'id' => $post_id,
+                        'title' => $title,
+                        'description' => $description,
+                    );
+                    wp_send_json($response_data);
                 } else {
                     wp_send_json_error('Failed to add video player. Please try again.');
                 }
@@ -176,7 +181,7 @@ class CustomPost
                 }
                 wp_send_json_success($video_players);
             } else {
-                wp_send_json_error('No video players found');
+                wp_send_json_error("No data");
             }
         } else {
             wp_send_json_error('Invalid request');
@@ -232,7 +237,8 @@ class CustomPost
         $controls = sanitize_text_field($_POST['controls']);
         $player_size = sanitize_text_field($_POST['player_size']);
         $url = esc_url_raw($_POST['video_url']);
-
+        var_dump("SDFSDFSDF");
+        exit;
         update_post_meta($video_player_id, 'autoplay', $autoplay);
         update_post_meta($video_player_id, 'audio', $audio);
         update_post_meta($video_player_id, 'player_size', $player_size);
@@ -249,7 +255,6 @@ class CustomPost
         $has_all_post_meta = !in_array('', $post_meta_data, true);
 
         $shortcode = $has_all_post_meta ? '[video_player id="' . $video_player_id . '"]' : 'Add setting first';
-
         $updated_video_player = array(
             'id' => $video_player_id,
             'autoplay' => $autoplay,
@@ -259,7 +264,7 @@ class CustomPost
             'video_url' => $url,
             'post_title' => $title,
             'post_content' => $description,
-            'shortcode' => $shortcode, 
+            'shortcode' => $shortcode,
         );
 
         $response_data = array(

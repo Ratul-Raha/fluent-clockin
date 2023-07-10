@@ -23,55 +23,63 @@
     <el-main>
       <h2 class="page-title">Video Players setting</h2>
       <!-- Render the video players list here -->
-      <el-table :data="displayedVideoPlayers" border>
-        <el-table-column prop="ID" label="ID" sortable>
-          <template #default="scope">
-            {{ scope.$index + 1 }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="title" label="Title" sortable>
-          <template #default="scope">
-            {{ scope.row.post_title }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="post_content" label="Description" sortable>
-          <template #default="scope">
-            {{ scope.row.post_content }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="shortcode" label="Short Code" sortable>
-          <template #default="scope">
-            <div v-if="scope.row.shortcode !== 'Add setting first'">
-              {{ scope.row.shortcode }}
-              <el-icon @click="copyShortcode(scope.row.shortcode)"
-                ><CopyDocument
-              /></el-icon>
-            </div>
-            <div v-else>
-              {{ scope.row.shortcode }}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="Actions">
-          <template #default="scope">
-            <el-button type="primary" @click="editVideoPlayer(scope.row)"
-              ><el-icon><Edit /></el-icon
-            ></el-button>
-            <el-button type="danger" @click="deleteVideoPlayer(scope.row)"
-              ><el-icon><Delete /></el-icon
-            ></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-pagination
-        @size-change="handlePaginationSizeChange"
-        @current-change="handlePaginationCurrentChange"
-        :current-page="currentPage"
-        :page-size="pageSize"
-        :total="totalRows"
-        style="display: flex; align-items: baseline"
-      ></el-pagination>
+      <div v-if="displayedVideoPlayers.length > 0">
+        <el-table
+          :data="displayedVideoPlayers"
+          v-if="displayedVideoPlayers.length > 0"
+          border
+        >
+          <el-table-column prop="ID" label="ID" sortable>
+            <template #default="scope">
+              {{ scope.$index + 1 }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="title" label="Title" sortable>
+            <template #default="scope">
+              {{ scope.row.post_title }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="post_content" label="Description" sortable>
+            <template #default="scope">
+              {{ scope.row.post_content }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="shortcode" label="Short Code" sortable>
+            <template #default="scope">
+              <div v-if="scope.row.shortcode !== 'Add setting first'">
+                {{ scope.row.shortcode }}
+                <el-icon @click="copyShortcode(scope.row.shortcode)"
+                  ><CopyDocument
+                /></el-icon>
+              </div>
+              <div v-else>
+                {{ scope.row.shortcode }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions">
+            <template #default="scope">
+              <el-button type="primary" @click="editVideoPlayer(scope.row)"
+                ><el-icon><Edit /></el-icon
+              ></el-button>
+              <el-button type="danger" @click="deleteVideoPlayer(scope.row)"
+                ><el-icon><Delete /></el-icon
+              ></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination
+          @size-change="handlePaginationSizeChange"
+          @current-change="handlePaginationCurrentChange"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          :total="totalRows"
+          style="display: flex; align-items: baseline"
+        ></el-pagination>
+      </div>
+      <el-alert v-else title="No data" show-icon
+        >No video player available. Add from the sidemenu.</el-alert
+      >
     </el-main>
 
     <!-- Video Player Modal -->
@@ -84,7 +92,7 @@
       <div class="video-player-modal">
         <div class="form-group">
           <span class="label">Title:</span>
-          <el-input v-model="videoPlayerForm.title" type="text"></el-input>
+            <input v-model="videoPlayerForm.title" type="text">
         </div>
         <div class="form-group">
           <span class="label">Description:</span>
@@ -102,6 +110,8 @@
         </div>
       </div>
     </el-dialog>
+    <!-- abc -->
+ 
 
     <!--EditPlayerModal-->
     <el-dialog
@@ -114,7 +124,7 @@
         <div class="form-group">
           <label class="label">Title*:</label>
           <div class="form-field">
-            <el-input v-model="editedVideoPlayer.title" type="text"></el-input>
+            <input v-model="editedVideoPlayer.title" type="text"/>
           </div>
         </div>
         <div class="form-group">
@@ -122,7 +132,8 @@
           <div class="form-field">
             <el-input
               v-model="editedVideoPlayer.description"
-              type="text"
+              type="textarea"
+              row="4"
             ></el-input>
           </div>
         </div>
@@ -156,24 +167,24 @@
         <div class="form-group">
           <label class="label">Player Size*:</label>
           <div class="form-field">
-            <el-select
+            <select
               v-model="editedVideoPlayer.player_size"
               placeholder="Select size"
             >
-              <el-option label="Small" value="small"></el-option>
-              <el-option label="Medium" value="medium"></el-option>
-              <el-option label="Large" value="large"></el-option>
-            </el-select>
+              <option label="Small" value="small"></option>
+              <option label="Medium" value="medium"></option>
+              <option label="Large" value="large"></option>
+            </select>
           </div>
         </div>
         <div class="form-group">
           <label class="label">Video URL*:</label>
           <div class="form-field">
-            <el-input
+            <input
               v-model="editedVideoPlayer.video_url"
               type="text"
               placeholder="youtube urls, urls with .mp4 extension"
-            ></el-input>
+            />
             <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
           </div>
         </div>
@@ -290,6 +301,7 @@ export default {
           xhr.setRequestHeader("X-Action", "add_video_player");
         },
         success: (response) => {
+          console.log(response);
           ElNotification({
             title: "Success!",
             message: "Video Player added successfully",
@@ -297,6 +309,10 @@ export default {
             type: "success",
           });
           this.fetchVideoPlayers();
+          this.editVideoPlayerModalVisible = true;
+          this.editedVideoPlayer.title = response.title;
+          this.editedVideoPlayer.description = response.description;
+          this.editedVideoPlayer.id = response.id;
         },
         error: function (error) {
           console.error("Form submission failed:", error);
@@ -320,12 +336,16 @@ export default {
           xhr.setRequestHeader("X-Action", "clk_fetch_video_player");
         },
         success: (response) => {
-          const videoPlayers = response.data;
-          this.totalRows = videoPlayers.length;
-
-          const start = (this.currentPage - 1) * this.pageSize;
-          const end = start + this.pageSize;
-          this.displayedVideoPlayers = videoPlayers.slice(start, end);
+          if (response.data === "No data") {
+            this.displayedVideoPlayers = [];
+          } else {
+            const videoPlayers = response.data;
+            this.totalRows = videoPlayers.length;
+            const start = (this.currentPage - 1) * this.pageSize;
+            const end = start + this.pageSize;
+            this.displayedVideoPlayers = videoPlayers.slice(start, end);
+            console.log(this.displayedVideoPlayers);
+          }
         },
         error: function (error) {
           console.error("Data fetching failed:", error);
@@ -413,14 +433,14 @@ export default {
             duration: 2000,
             type: "success",
           });
-
+          console.log(response.data);
           const updatedVideoPlayerIndex = [
             ...this.displayedVideoPlayers,
           ].findIndex((vp) => vp.ID === this.editedVideoPlayer.id);
 
           if (updatedVideoPlayerIndex !== -1) {
             const updatedVideoPlayers = [...this.displayedVideoPlayers];
-            this.displayedVideoPlayers = updatedVideoPlayers;
+            this.displayedVideoPlayers[updatedVideoPlayerIndex] = response.data;
           }
           this.editVideoPlayerModalVisible = false;
         },
@@ -555,4 +575,23 @@ export default {
   justify-content: flex-end;
   margin-top: 20px;
 }
+
+.video-player-modal input[type="text"] {
+  width: 100%;
+  padding: 0px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.edit-video-player-modal input[type="text"] {
+  width: 100%;
+  padding-left: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
 </style>
