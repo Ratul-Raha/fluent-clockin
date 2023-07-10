@@ -23,7 +23,7 @@ use FluentEmbed\PluginInit;
 }
 require_once __DIR__ . '/vendor/autoload.php';
 
-define('FLUENTCOLCKIN_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
+define('FLUENTCLOCKIN_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
 
 class Initial {
     function __construct(){

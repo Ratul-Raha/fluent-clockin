@@ -15,7 +15,7 @@ class PluginInit
                 'fluent_embed',
                 function () {
                     wp_enqueue_script('test_app_js', 'http://localhost:8888/resources/js/app.js', 'jquery', '3.0', false);
-                    echo '<div id="fluent_clockin_app"></div>';
+                    echo '<div id="fluent_embed_app"></div>';
 
                     wp_localize_script('test_app_js', 'clk_ajax', array(
                         'ajaxurl' => admin_url('admin-ajax.php'),

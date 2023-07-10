@@ -14,7 +14,6 @@ export default defineConfig({
     manifest: true,
     outDir: 'assets',
     assetsDir: 'assetsDIR',
-    // publicDir: 'public',
     emptyOutDir: true, // delete the contents of the output directory before each build
 
     rollupOptions: {
@@ -22,22 +21,14 @@ export default defineConfig({
         'resources/js/app.js',
       ],
       output: {
-        // chunkFileNames: 'js/[name]-[hash].js',
-        // entryFileNames: 'js/[name]-[hash].js',
         chunkFileNames: 'js/[name].js',
         entryFileNames: 'js/[name].js',
         
         assetFileNames: ({name}) => {
-          // if (/\.(gif|jpe?g|png|svg)$/.test(name ?? '')){
-          //     return 'images/[name]-[hash][extname]';
-          // }
           
           if (/\.css$/.test(name ?? '')) {
               return 'css/[name]-[hash][extname]';   
           }
- 
-          // default value
-          // ref: https://rollupjs.org/guide/en/#outputassetfilenames
           return '[name]-[hash][extname]';
         },
       },

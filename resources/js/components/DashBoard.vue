@@ -41,11 +41,14 @@
         </el-table-column>
         <el-table-column prop="shortcode" label="Short Code" sortable>
           <template #default="scope">
-            <div>
+            <div v-if="scope.row.shortcode !== 'Add setting first'">
               {{ scope.row.shortcode }}
               <el-icon @click="copyShortcode(scope.row.shortcode)"
                 ><CopyDocument
               /></el-icon>
+            </div>
+            <div v-else>
+              {{ scope.row.shortcode }}
             </div>
           </template>
         </el-table-column>
@@ -169,13 +172,14 @@
             <el-input
               v-model="editedVideoPlayer.video_url"
               type="text"
+              placeholder="youtube urls, urls with .mp4 extension"
             ></el-input>
             <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
           </div>
         </div>
-        <el-text style="color: red"
+        <el-alert title="" type="warning" show-icon
           >For youtube video policy, autoplay can't start with audio is
-          on</el-text
+          on.</el-alert
         >
         <div class="modal-buttons">
           <el-button type="primary" @click="saveEditedVideoPlayer"
@@ -277,7 +281,7 @@ export default {
         url: clk_ajax.ajaxurl,
         type: "POST",
         data: {
-          action: "add_video_player",
+          action: "clk_add_video_player",
           nonce: clk_ajax.clk_nonce,
           title: this.videoPlayerForm.title,
           description: this.videoPlayerForm.description,
@@ -287,9 +291,10 @@ export default {
         },
         success: (response) => {
           ElNotification({
-            title: "Toast!",
+            title: "Success!",
             message: "Video Player added successfully",
-            duration: 2,
+            duration: 2000,
+            type: "success",
           });
           this.fetchVideoPlayers();
         },
@@ -308,11 +313,11 @@ export default {
         url: clk_ajax.ajaxurl,
         type: "POST",
         data: {
-          action: "fetch_video_player",
+          action: "clk_fetch_video_player",
           nonce: clk_ajax.clk_nonce,
         },
         beforeSend: function (xhr) {
-          xhr.setRequestHeader("X-Action", "fetch_video_player");
+          xhr.setRequestHeader("X-Action", "clk_fetch_video_player");
         },
         success: (response) => {
           const videoPlayers = response.data;
@@ -336,7 +341,7 @@ export default {
         url: clk_ajax.ajaxurl,
         type: "POST",
         data: {
-          action: "fetch_video_player_setting",
+          action: "clk_fetch_video_player_setting",
           nonce: clk_ajax.clk_nonce,
           id: row.ID,
         },
@@ -387,7 +392,7 @@ export default {
         url: clk_ajax.ajaxurl,
         type: "POST",
         data: {
-          action: "save_video_player_setting",
+          action: "clk_save_video_player_setting",
           nonce: clk_ajax.clk_nonce,
           id: this.editedVideoPlayer.id,
           autoplay: this.editedVideoPlayer.autoplay,
@@ -399,7 +404,7 @@ export default {
           controls: this.editedVideoPlayer.controls,
         },
         beforeSend: function (xhr) {
-          xhr.setRequestHeader("X-Action", "save_video_player_setting");
+          xhr.setRequestHeader("X-Action", "clk_save_video_player_setting");
         },
         success: (response) => {
           ElNotification({
@@ -414,9 +419,8 @@ export default {
           ].findIndex((vp) => vp.ID === this.editedVideoPlayer.id);
 
           if (updatedVideoPlayerIndex !== -1) {
-            const updatedVideoPlayers = [...this.displayedVideoPlayers]; // Create a non-proxy array
-            updatedVideoPlayers[updatedVideoPlayerIndex] = response.data;
-            this.displayedVideoPlayers = updatedVideoPlayers; // Assign the updated array back to the proxy property
+            const updatedVideoPlayers = [...this.displayedVideoPlayers];
+            this.displayedVideoPlayers = updatedVideoPlayers;
           }
           this.editVideoPlayerModalVisible = false;
         },
@@ -436,7 +440,7 @@ export default {
           url: clk_ajax.ajaxurl,
           type: "POST",
           data: {
-            action: "delete_video_player",
+            action: "clk_delete_video_player",
             nonce: clk_ajax.clk_nonce,
             id: row.ID,
           },
@@ -447,7 +451,7 @@ export default {
             ElNotification({
               title: "Toast!",
               message: "Video Player deleted successfully",
-              duration: 2,
+              duration: 2000,
             });
             this.fetchVideoPlayers();
           },

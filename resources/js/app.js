@@ -11,4 +11,4 @@ const app = createApp(App);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
-app.use(ElementPlus).use(router).mount("#fluent_clockin_app");
+app.use(ElementPlus).use(router).mount("#fluent_embed_app");
