@@ -92,7 +92,12 @@
       <div class="video-player-modal">
         <div class="form-group">
           <span class="label">Title:</span>
-            <input v-model="videoPlayerForm.title" type="text">
+          <input
+            v-model="videoPlayerForm.title"
+            type="text"
+            maxlength="20"
+            placeholder="Max 20 characters"
+          />
         </div>
         <div class="form-group">
           <span class="label">Description:</span>
@@ -100,6 +105,8 @@
             v-model="videoPlayerForm.description"
             type="textarea"
             :rows="4"
+            maxlength="100"
+            placeholder="Max 100 characters"
           ></el-input>
         </div>
         <div class="modal-buttons">
@@ -110,138 +117,30 @@
         </div>
       </div>
     </el-dialog>
-    <!-- abc -->
- 
-
-    <!--EditPlayerModal-->
     <el-dialog
       title="Edit Video Player Setting"
       v-model="editVideoPlayerModalVisible"
       width="30%"
       @close="cancelEditVideoPlayerForm"
     >
-      <div class="edit-video-player-modal">
-        <div class="form-group">
-          <label class="label">Title*:</label>
-          <div class="form-field">
-            <input v-model="editedVideoPlayer.title" type="text"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Description:</label>
-          <div class="form-field">
-            <el-input
-              v-model="editedVideoPlayer.description"
-              type="textarea"
-              row="4"
-            ></el-input>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Autoplay*:</label>
-          <div class="form-field">
-            <el-radio-group v-model="editedVideoPlayer.autoplay">
-              <el-radio label="yes">Yes</el-radio>
-              <el-radio label="no">No</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Audio*:</label>
-          <div class="form-field">
-            <el-radio-group v-model="editedVideoPlayer.audio">
-              <el-radio label="on">On</el-radio>
-              <el-radio label="off">Off</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Controls*:</label>
-          <div class="form-field">
-            <el-radio-group v-model="editedVideoPlayer.controls">
-              <el-radio label="on">On</el-radio>
-              <el-radio label="off">Off</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Player Size*:</label>
-          <div class="form-field">
-            <select
-              v-model="editedVideoPlayer.player_size"
-              placeholder="Select size"
-            >
-              <option label="Small" value="small"></option>
-              <option label="Medium" value="medium"></option>
-              <option label="Large" value="large"></option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Video URL*:</label>
-          <div class="form-field">
-            <input
-              v-model="editedVideoPlayer.video_url"
-              type="text"
-              placeholder="youtube urls, urls with .mp4 extension"
-            />
-            <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
-          </div>
-        </div>
-        <el-alert title="" type="warning" show-icon
-          >For youtube video policy, autoplay can't start with audio is
-          on.</el-alert
-        >
-        <div class="modal-buttons">
-          <el-button type="primary" @click="saveEditedVideoPlayer"
-            >Save</el-button
-          >
-          <el-button @click="cancelEditVideoPlayerForm">Cancel</el-button>
-        </div>
-      </div>
+      <EditSettingModal
+        :editedVideoPlayer="editedVideoPlayer"
+        :editVideoPlayerModalVisible="editVideoPlayerModalVisible"
+        @cancelEditVideoPlayerForm="cancelEditVideoPlayerForm"
+        @saveEditedVideoPlayer="saveEditedVideoPlayer"
+      ></EditSettingModal>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {
-  ElAvatar,
-  ElMenu,
-  ElMenuItem,
-  ElMain,
-  ElTable,
-  ElTableColumn,
-  ElDialog,
-  ElRadio,
-  ElRadioGroup,
-  ElSelect,
-  ElOption,
-  ElInput,
-  ElButton,
-  ElNotification,
-  ElContainer,
-  ElPagination,
-} from "element-plus";
-import { RouterLink } from "vue-router";
+import { ElNotification } from "element-plus";
+import EditSettingModal from "../components/modals/EditVideoPlayerModal.vue";
 
 export default {
   components: {
-    ElAvatar,
-    ElMenu,
-    ElMenuItem,
-    ElMain,
-    ElTable,
-    ElTableColumn,
-    ElDialog,
-    ElButton,
-    RouterLink,
     ElNotification,
-    ElContainer,
-    ElRadio,
-    ElRadioGroup,
-    ElSelect,
-    ElOption,
-    ElInput,
+    EditSettingModal,
   },
   data() {
     return {
@@ -344,7 +243,6 @@ export default {
             const start = (this.currentPage - 1) * this.pageSize;
             const end = start + this.pageSize;
             this.displayedVideoPlayers = videoPlayers.slice(start, end);
-            console.log(this.displayedVideoPlayers);
           }
         },
         error: function (error) {
@@ -356,7 +254,6 @@ export default {
     editVideoPlayer(row) {
       this.editVideoPlayerModalVisible = true;
       this.editedVideoPlayer.id = row.ID;
-
       jQuery.ajax({
         url: clk_ajax.ajaxurl,
         type: "POST",
@@ -369,6 +266,7 @@ export default {
           xhr.setRequestHeader("X-Action", "fetch_video_player_setting");
         },
         success: (response) => {
+          console.log(response.title);
           this.editedVideoPlayer.title = response.title;
           this.editedVideoPlayer.description = response.description;
           this.editedVideoPlayer.autoplay = response.autoplay;
@@ -433,15 +331,7 @@ export default {
             duration: 2000,
             type: "success",
           });
-          console.log(response.data);
-          const updatedVideoPlayerIndex = [
-            ...this.displayedVideoPlayers,
-          ].findIndex((vp) => vp.ID === this.editedVideoPlayer.id);
-
-          if (updatedVideoPlayerIndex !== -1) {
-            const updatedVideoPlayers = [...this.displayedVideoPlayers];
-            this.displayedVideoPlayers[updatedVideoPlayerIndex] = response.data;
-          }
+          this.fetchVideoPlayers();
           this.editVideoPlayerModalVisible = false;
         },
         error: function (error) {
@@ -578,7 +468,7 @@ export default {
 
 .video-player-modal input[type="text"] {
   width: 100%;
-  padding: 0px;
+  padding-left: 10px;
   border: 1px solid #cccccc;
   border-radius: 4px;
   font-size: 14px;
@@ -593,5 +483,4 @@ export default {
   font-size: 14px;
   box-sizing: border-box;
 }
-
 </style>

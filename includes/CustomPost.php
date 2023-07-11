@@ -23,15 +23,17 @@ class CustomPost
             'id' => '',
         ), $atts);
 
-        $video_url = get_post_meta($atts['id'], 'video_url', true);
-        $autoplay = get_post_meta($atts['id'], 'autoplay', true);
-        $audio = get_post_meta($atts['id'], 'audio', true);
-        $player_size = get_post_meta($atts['id'], 'player_size', true);
-        $controls = get_post_meta($atts['id'], 'controls', true);
+        $settings = get_post_meta($atts['id'], 'video_player_settings', true);
 
         $output = '';
 
-        if ($video_url && $autoplay && $audio && $player_size) {
+        if ($settings && isset($settings['video_url'], $settings['autoplay'], $settings['audio'], $settings['player_size'], $settings['controls'])) {
+            $video_url = $settings['video_url'];
+            $autoplay = $settings['autoplay'];
+            $audio = $settings['audio'];
+            $player_size = $settings['player_size'];
+            $controls = $settings['controls'];
+
             $player_width = '';
             switch ($player_size) {
                 case 'small':
@@ -73,8 +75,9 @@ class CustomPost
                 }
                 $output = '<div class="video-player">
                 <iframe width="' . $player_width . '" height="' . $player_height . '"
-            src="' . $embedded_url . '">
-            </iframe></div>';
+                src="' . $embedded_url . '">
+                </iframe>
+            </div>';
                 return $output;
             }
 
@@ -99,9 +102,9 @@ class CustomPost
         } else {
             return $output .= 'Video player settings not found.';
         }
-
         return  $output;
     }
+
 
     function clk_register_video_player_post_type()
     {
@@ -157,28 +160,19 @@ class CustomPost
 
     function clk_fetch_video_player()
     {
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
             global $wpdb;
 
             $post_type = 'video_player';
             $query = $wpdb->prepare("
-                SELECT *
-                FROM {$wpdb->prefix}posts
-                WHERE post_type = %s
-            ", $post_type);
+            SELECT p.ID, p.post_title, p.post_content, CONCAT('[video_player id=\"', p.ID, '\"]') AS shortcode
+            FROM {$wpdb->prefix}posts AS p
+            WHERE p.post_type = %s
+        ", $post_type);
 
             $video_players = $wpdb->get_results($query, ARRAY_A);
-            if ($video_players) {
 
-                foreach ($video_players as &$video_player) {
-                    $setting_exist = get_post_meta($video_player['ID']);
-                    if ($setting_exist) {
-                        $video_player['shortcode'] = '[' . 'video_player' . ' id="' . $video_player['ID'] . '"]';
-                    } else {
-                        $video_player['shortcode'] = "Add setting first";
-                    }
-                }
+            if ($video_players) {
                 wp_send_json_success($video_players);
             } else {
                 wp_send_json_error("No data");
@@ -187,6 +181,7 @@ class CustomPost
             wp_send_json_error('Invalid request');
         }
     }
+
     function clk_delete_video_player()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
@@ -197,7 +192,6 @@ class CustomPost
                 $result = wp_delete_post($video_player_id);
 
                 if ($result !== false) {
-                    delete_post_meta($video_player_id, 'video_player_shortcode');
                     wp_send_json_success('Video player deleted successfully.');
                 } else {
                     wp_send_json_error('Failed to delete video player. Please try again.');
@@ -232,36 +226,19 @@ class CustomPost
         );
         wp_update_post($post_data);
 
-        $autoplay = sanitize_text_field($_POST['autoplay']);
-        $audio = sanitize_text_field($_POST['audio']);
-        $controls = sanitize_text_field($_POST['controls']);
-        $player_size = sanitize_text_field($_POST['player_size']);
-        $url = esc_url_raw($_POST['video_url']);
-        var_dump("SDFSDFSDF");
-        exit;
-        update_post_meta($video_player_id, 'autoplay', $autoplay);
-        update_post_meta($video_player_id, 'audio', $audio);
-        update_post_meta($video_player_id, 'player_size', $player_size);
-        update_post_meta($video_player_id, 'video_url', $url);
-        update_post_meta($video_player_id, 'controls', $controls);
-
-        $post_meta_data = array(
-            'autoplay' => $autoplay,
-            'audio' => $audio,
-            'controls' => $controls,
-            'player_size' => $player_size,
-            'video_url' => $url,
+        $settings = array(
+            'autoplay' => sanitize_text_field($_POST['autoplay']),
+            'audio' => sanitize_text_field($_POST['audio']),
+            'controls' => sanitize_text_field($_POST['controls']),
+            'player_size' => sanitize_text_field($_POST['player_size']),
+            'video_url' => esc_url_raw($_POST['video_url']),
         );
-        $has_all_post_meta = !in_array('', $post_meta_data, true);
 
-        $shortcode = $has_all_post_meta ? '[video_player id="' . $video_player_id . '"]' : 'Add setting first';
+        update_post_meta($video_player_id, 'video_player_settings', $settings);
+
+        $shortcode = '[video_player id="' . $video_player_id . '"]';
         $updated_video_player = array(
             'id' => $video_player_id,
-            'autoplay' => $autoplay,
-            'audio' => $audio,
-            'controls' => $controls,
-            'player_size' => $player_size,
-            'video_url' => $url,
             'post_title' => $title,
             'post_content' => $description,
             'shortcode' => $shortcode,
@@ -273,6 +250,7 @@ class CustomPost
         );
         wp_send_json($response_data);
     }
+
 
     function clk_fetch_video_player_setting()
     {
@@ -286,11 +264,16 @@ class CustomPost
         }
 
         $video_player_id = $_POST['id'];
-        $audio = get_post_meta($video_player_id, 'audio', true);
-        $autoplay = get_post_meta($video_player_id, 'autoplay', true);
-        $video_url = get_post_meta($video_player_id, 'video_url', true);
-        $player_size = get_post_meta($video_player_id, 'player_size', true);
-        $controls = get_post_meta($video_player_id, 'controls', true);
+        $settings = get_post_meta($video_player_id, 'video_player_settings', true);
+
+        if (!$settings) {
+            $response = array(
+                'success' => false,
+                'message' => 'Video player settings not found.'
+            );
+            wp_send_json($response);
+        }
+
         $title = get_the_title($video_player_id);
         $description = get_post_field('post_content', $video_player_id);
 
@@ -298,11 +281,11 @@ class CustomPost
             'success' => true,
             'title' => $title,
             'description' => $description,
-            'audio' => $audio,
-            'autoplay' => $autoplay,
-            'controls' => $controls,
-            'player_size' => $player_size,
-            'video_url' => $video_url,
+            'audio' => $settings['audio'],
+            'autoplay' => $settings['autoplay'],
+            'controls' => $settings['controls'],
+            'player_size' => $settings['player_size'],
+            'video_url' => $settings['video_url'],
         );
         wp_send_json($response);
     }
