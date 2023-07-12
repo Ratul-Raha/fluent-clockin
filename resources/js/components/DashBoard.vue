@@ -30,19 +30,10 @@
           border
         >
           <el-table-column prop="ID" label="ID" sortable>
-            <template #default="scope">
-              {{ scope.$index + 1 }}
-            </template>
           </el-table-column>
-          <el-table-column prop="title" label="Title" sortable>
-            <template #default="scope">
-              {{ scope.row.post_title }}
-            </template>
+          <el-table-column prop="post_title" label="Title" sortable>
           </el-table-column>
           <el-table-column prop="post_content" label="Description" sortable>
-            <template #default="scope">
-              {{ scope.row.post_content }}
-            </template>
           </el-table-column>
           <el-table-column prop="shortcode" label="Short Code" sortable>
             <template #default="scope">
@@ -57,7 +48,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="Actions">
+          <el-table-column label="Actions" prop="ID">
             <template #default="scope">
               <el-button type="primary" @click="editVideoPlayer(scope.row)"
                 ><el-icon><Edit /></el-icon
@@ -69,13 +60,14 @@
           </el-table-column>
         </el-table>
         <el-pagination
-          @size-change="handlePaginationSizeChange"
+        @size-change="handlePaginationSizeChange"
           @current-change="handlePaginationCurrentChange"
           :current-page="currentPage"
           :page-size="pageSize"
           :total="totalRows"
-          style="display: flex; align-items: baseline"
-        ></el-pagination>
+          layout="prev, pager, next"
+          style = "align-items: stretch"
+        />
       </div>
       <el-alert v-else title="No data" show-icon
         >No video player available. Add from the sidemenu.</el-alert
@@ -201,23 +193,33 @@ export default {
         },
         success: (response) => {
           console.log(response);
-          ElNotification({
-            title: "Success!",
-            message: "Video Player added successfully",
-            duration: 2000,
-            type: "success",
-          });
-          this.fetchVideoPlayers();
-          this.editVideoPlayerModalVisible = true;
-          this.editedVideoPlayer.title = response.title;
-          this.editedVideoPlayer.description = response.description;
-          this.editedVideoPlayer.id = response.id;
+          if (response.success === true) {
+            ElNotification({
+              title: "Success!",
+              message: response.data,
+              duration: 4000,
+              type: "success",
+            });
+            this.fetchVideoPlayers();
+            this.editVideoPlayerModalVisible = true;
+            this.editedVideoPlayer.title = response.title;
+            this.editedVideoPlayer.description = response.description;
+            this.editedVideoPlayer.player_size = "small";
+            this.editedVideoPlayer.id = response.id;
+            this.videoPlayerModalVisible = false;
+          } else {
+            ElNotification({
+              title: "Error!",
+              message: response.data,
+              duration: 4000,
+              type: "error",
+            });
+          }
         },
         error: function (error) {
           console.error("Form submission failed:", error);
         },
       });
-      this.videoPlayerModalVisible = false;
     },
 
     cancelVideoPlayerForm() {
@@ -250,7 +252,6 @@ export default {
         },
       });
     },
-
     editVideoPlayer(row) {
       this.editVideoPlayerModalVisible = true;
       this.editedVideoPlayer.id = row.ID;
@@ -263,10 +264,9 @@ export default {
           id: row.ID,
         },
         beforeSend: function (xhr) {
-          xhr.setRequestHeader("X-Action", "fetch_video_player_setting");
+          xhr.setRequestHeader("X-Action", "clk_fetch_video_player_setting");
         },
         success: (response) => {
-          console.log(response.title);
           this.editedVideoPlayer.title = response.title;
           this.editedVideoPlayer.description = response.description;
           this.editedVideoPlayer.autoplay = response.autoplay;
@@ -325,14 +325,24 @@ export default {
           xhr.setRequestHeader("X-Action", "clk_save_video_player_setting");
         },
         success: (response) => {
-          ElNotification({
-            title: "Success!",
-            message: "Video Player Settings are saved!",
-            duration: 2000,
-            type: "success",
-          });
-          this.fetchVideoPlayers();
-          this.editVideoPlayerModalVisible = false;
+          if (response.success === true) {
+            ElNotification({
+              title: "Success!",
+              message: "Video Player Settings are saved!",
+              duration: 2000,
+              type: "success",
+            });
+            this.fetchVideoPlayers();
+            this.editVideoPlayerModalVisible = false;
+            this.editedVideoPlayer = {};
+          } else {
+            ElNotification({
+              title: "Error!",
+              message: response.data,
+              duration: 4000,
+              type: "error",
+            });
+          }
         },
         error: function (error) {
           ElNotification({

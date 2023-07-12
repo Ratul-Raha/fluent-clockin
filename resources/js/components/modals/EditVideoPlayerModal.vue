@@ -1,94 +1,90 @@
 <template>
-      <div class="edit-video-player-modal">
-        <div class="form-group">
-          <span class="label">Title:</span>
-          <input
-            v-model="editedVideoPlayer.title"
-            type="text"
-            maxlength="30"
-            placeholder="Max 20 characters"
-          />
-        </div>
-        <div class="form-group">
-          <span class="label">Description:</span>
-          <el-input
-            v-model="editedVideoPlayer.description"
-            type="textarea"
-            :rows="4"
-            maxlength="100"
-            placeholder="Max 100 characters"
-          ></el-input>
-        </div>
+  <div class="edit-video-player-modal">
+    <div class="form-group">
+      <span class="label">Title*:</span>
+      <input
+        v-model="editedVideoPlayer.title"
+        type="text"
+        maxlength="30"
+        placeholder="Max 20 characters"
+      />
+    </div>
+    <div class="form-group">
+      <span class="label">Description:</span>
+      <el-input
+        v-model="editedVideoPlayer.description"
+        type="textarea"
+        :rows="4"
+        maxlength="100"
+        placeholder="Max 100 characters"
+      ></el-input>
+    </div>
 
-        <div class="form-group">
-          <label class="label">Autoplay*:</label>
-          <div class="form-field">
-            <el-radio-group v-model="editedVideoPlayer.autoplay">
-              <el-radio label="yes">Yes</el-radio>
-              <el-radio label="no">No</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Audio*:</label>
-          <div class="form-field">
-            <el-radio-group v-model="editedVideoPlayer.audio">
-              <el-radio label="on">On</el-radio>
-              <el-radio label="off">Off</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Controls*:</label>
-          <div class="form-field">
-            <el-radio-group v-model="editedVideoPlayer.controls">
-              <el-radio label="on">On</el-radio>
-              <el-radio label="off">Off</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Player Size*:</label>
-          <div class="form-field">
-            <select
-              v-model="editedVideoPlayer.player_size"
-              placeholder="Select size"
-            >
-              <option value="" disabled selected>Select a size</option>
-              <option label="Small" value="small"></option>
-              <option label="Medium" value="medium"></option>
-              <option label="Large" value="large"></option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Video URL*:</label>
-          <div class="form-field">
-            <input
-              v-model="editedVideoPlayer.video_url"
-              type="text"
-              placeholder="youtube urls, urls with .mp4 extension"
-            />
-            <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
-          </div>
-        </div>
-        <el-alert title="" type="warning" show-icon
-          >For youtube video policy, autoplay can't start with audio is
-          on.</el-alert
-        >
-        <div class="modal-buttons">
-          <el-button type="primary" @click="saveEditedVideoPlayer"
-            >Save</el-button
-          >
-          <el-button @click="cancelEditVideoPlayerForm">Cancel</el-button>
-        </div>
+    <div class="form-group">
+      <label class="label">Autoplay*:</label>
+      <div class="form-field">
+        <el-radio-group v-model="editedVideoPlayer.autoplay">
+          <el-radio label="yes">Yes</el-radio>
+          <el-radio label="no">No</el-radio>
+        </el-radio-group>
       </div>
+    </div>
+    <div class="form-group">
+      <label class="label">Audio*:</label>
+      <div class="form-field">
+        <el-radio-group v-model="editedVideoPlayer.audio">
+          <el-radio label="on">On</el-radio>
+          <el-radio label="off">Off</el-radio>
+        </el-radio-group>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="label">Controls*:</label>
+      <div class="form-field">
+        <el-radio-group v-model="editedVideoPlayer.controls">
+          <el-radio label="on">On</el-radio>
+          <el-radio label="off">Off</el-radio>
+        </el-radio-group>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="label">Player Size*:</label>
+      <div class="form-field">
+        <select
+          v-model="editedVideoPlayer.player_size"
+          placeholder="Select a size"
+        >
+          <option label="Small" value="small"></option>
+          <option label="Medium" value="medium"></option>
+          <option label="Large" value="large"></option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="label">Video URL*:</label>
+      <div class="form-field">
+        <input
+          v-model="editedVideoPlayer.video_url"
+          type="text"
+          placeholder="youtube urls, urls with .mp4 extension"
+        />
+        <el-input v-model="editedVideoPlayer.id" type="hidden"></el-input>
+      </div>
+    </div>
+    <el-alert title="" type="warning" show-icon
+      >For youtube video policy, autoplay can't start with audio is
+      on.</el-alert
+    >
+    <div class="modal-buttons">
+      <el-button type="primary" @click="saveEditedVideoPlayer">Save</el-button>
+      <el-button @click="cancelEditVideoPlayerForm">Cancel</el-button>
+    </div>
+  </div>
 </template>
 
 <script>
-
 export default {
-  props: ['editVideoPlayerModalVisible', 'editedVideoPlayer'],
+  props: ["editVideoPlayerModalVisible", "editedVideoPlayer"],
   methods: {
     cancelEditVideoPlayerForm() {
       this.$emit("cancelEditVideoPlayerForm");
@@ -100,7 +96,6 @@ export default {
 };
 </script>
 <style scoped>
-
 .modal-buttons {
   text-align: right;
   margin-top: 20px;
@@ -150,4 +145,3 @@ export default {
   box-sizing: border-box;
 }
 </style>
-
