@@ -29,23 +29,20 @@
           v-if="displayedVideoPlayers.length > 0"
           border
         >
-          <el-table-column prop="ID" label="ID" sortable>
-          </el-table-column>
+          <el-table-column prop="ID" label="ID" sortable> </el-table-column>
           <el-table-column prop="post_title" label="Title" sortable>
           </el-table-column>
           <el-table-column prop="post_content" label="Description" sortable>
           </el-table-column>
           <el-table-column prop="shortcode" label="Short Code" sortable>
             <template #default="scope">
-              <div v-if="scope.row.shortcode !== 'Add setting first'">
-                {{ scope.row.shortcode }}
-                <el-icon @click="copyShortcode(scope.row.shortcode)"
-                  ><CopyDocument
-                /></el-icon>
-              </div>
-              <div v-else>
-                {{ scope.row.shortcode }}
-              </div>
+              [video_player id = "{{ scope.row.ID }}"]
+              <el-icon
+                @click="
+                  copyShortcode('[video_player id= ' + scope.row.ID + ']')
+                "
+                ><CopyDocument
+              /></el-icon>
             </template>
           </el-table-column>
           <el-table-column label="Actions" prop="ID">
@@ -60,13 +57,13 @@
           </el-table-column>
         </el-table>
         <el-pagination
-        @size-change="handlePaginationSizeChange"
+          @size-change="handlePaginationSizeChange"
           @current-change="handlePaginationCurrentChange"
           :current-page="currentPage"
           :page-size="pageSize"
           :total="totalRows"
           layout="prev, pager, next"
-          style = "align-items: stretch"
+          style="align-items: stretch"
         />
       </div>
       <el-alert v-else title="No data" show-icon
@@ -90,6 +87,7 @@
             maxlength="20"
             placeholder="Max 20 characters"
           />
+          <p v-if="!videoPlayerForm.title" class="error-message">Please provide a title.</p>
         </div>
         <div class="form-group">
           <span class="label">Description:</span>
@@ -109,6 +107,7 @@
         </div>
       </div>
     </el-dialog>
+    <!--Edit Video Player Setting Modal-->
     <el-dialog
       title="Edit Video Player Setting"
       v-model="editVideoPlayerModalVisible"
@@ -127,7 +126,7 @@
 
 <script>
 import { ElNotification } from "element-plus";
-import EditSettingModal from "../components/modals/EditVideoPlayerModal.vue";
+import EditSettingModal from "./modals/EditVideoPlayerModal.vue";
 
 export default {
   components: {
@@ -143,8 +142,8 @@ export default {
       videoPlayerModalVisible: false,
       videoPlayersListModalVisible: false,
       videoPlayerForm: {
-        title: "",
-        description: "",
+        title: null,
+        description: null,
       },
       editVideoPlayerModalVisible: false,
       editedVideoPlayer: {
@@ -192,13 +191,13 @@ export default {
           xhr.setRequestHeader("X-Action", "add_video_player");
         },
         success: (response) => {
-          console.log(response);
           if (response.success === true) {
             ElNotification({
               title: "Success!",
-              message: response.data,
+              message: response.message,
               duration: 4000,
               type: "success",
+              offset: 20,
             });
             this.fetchVideoPlayers();
             this.editVideoPlayerModalVisible = true;
@@ -211,8 +210,8 @@ export default {
             ElNotification({
               title: "Error!",
               message: response.data,
-              duration: 4000,
               type: "error",
+              offset: 20,
             });
           }
         },
@@ -331,6 +330,7 @@ export default {
               message: "Video Player Settings are saved!",
               duration: 2000,
               type: "success",
+              offset: 20,
             });
             this.fetchVideoPlayers();
             this.editVideoPlayerModalVisible = false;
@@ -341,6 +341,7 @@ export default {
               message: response.data,
               duration: 4000,
               type: "error",
+              offset: 20,
             });
           }
         },
@@ -349,6 +350,7 @@ export default {
             title: "Error",
             message: error,
             type: "error",
+            offset: 20,
           });
           console.error("Data fetching failed:", error);
         },
@@ -369,11 +371,18 @@ export default {
           },
           success: (response) => {
             ElNotification({
-              title: "Toast!",
+              title: "Success!",
               message: "Video Player deleted successfully",
-              duration: 2000,
+              type: 'success',
+              duration: 4000,
+              offset: 20,
             });
             this.fetchVideoPlayers();
+            if (this.displayedVideoPlayers.length === 1) {
+              if (this.currentPage > 1) {
+                this.currentPage--;
+              }
+            }
           },
           error: function (error) {
             console.error("Deleting failed:", error);
@@ -388,7 +397,11 @@ export default {
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-      this.$message.success("Shortcode copied to clipboard");
+       this.$message({
+        message: "Shortcode copied to clipboard",
+        type: "success",
+        offset: 50,
+      });
     },
   },
 };

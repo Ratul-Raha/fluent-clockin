@@ -9,6 +9,7 @@
         placeholder="Max 20 characters"
       />
     </div>
+    <p v-if="!editedVideoPlayer.title" style="margin-left:100px" class="error-message">Please provide a title.</p>
     <div class="form-group">
       <span class="label">Description:</span>
       <el-input
@@ -33,7 +34,7 @@
       <label class="label">Audio*:</label>
       <div class="form-field">
         <el-radio-group v-model="editedVideoPlayer.audio">
-          <el-radio label="on">On</el-radio>
+          <el-radio label="on" :disabled="editedVideoPlayer.autoplay === 'yes'">On</el-radio>
           <el-radio label="off">Off</el-radio>
         </el-radio-group>
       </div>
@@ -91,6 +92,16 @@ export default {
     },
     saveEditedVideoPlayer() {
       this.$emit("saveEditedVideoPlayer", this.editedVideoPlayer);
+    },
+  },
+  watch: {
+    'editedVideoPlayer.autoplay': function (newVal) {
+      if (newVal === 'yes') {
+        this.editedVideoPlayer.audio = 'off';
+      } else {
+        // Otherwise, enable both audio options
+        // If you have other conditions or logic, you can add them here
+      }
     },
   },
 };

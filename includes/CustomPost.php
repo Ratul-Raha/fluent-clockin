@@ -17,13 +17,13 @@ class CustomPost
         add_shortcode('video_player', [$this, 'clk_video_player_shortcode']);
     }
 
-    function clk_video_player_shortcode($atts)
+    public function clk_video_player_shortcode($atts)
     {
         $atts = shortcode_atts(array(
             'id' => '',
         ), $atts);
 
-        $settings = get_post_meta($atts['id'], 'video_player_settings', true);
+        $settings = get_post_meta(sanitize_text_field($atts['id']), 'video_player_settings', true);
 
         $output = '';
 
@@ -112,7 +112,7 @@ class CustomPost
     }
 
 
-    function clk_register_video_player_post_type()
+    public function clk_register_video_player_post_type()
     {
 
         $labels = array(
@@ -133,21 +133,26 @@ class CustomPost
     }
 
     //Add Video Player
-    function clk_add_video_player()
+    public function clk_add_video_player()
     {
-        $nonce = sanitize_text_field($_POST['nonce']) ;
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $nonce && wp_verify_nonce($nonce, 'vue_clk_nonce')) {
-            if (isset($_POST['title'])) {
+            if (isset($_POST['title']) && trim($_POST['title']) !== '') {
                 $title = sanitize_text_field($_POST['title']);
                 $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
 
-                if (strlen($title) > 20) {
+                if (strlen($title) > 20 && strlen($description) > 100) {
                     wp_send_json_error('Title maxlength: 20, Description maxlength: 100, please check!');
+                }
+
+                if (strlen($title) > 20) {
+                    wp_send_json_error('Title maxlength: 20, please check!');
                     return;
                 }
 
                 if (strlen($description) > 100) {
-                    wp_send_json_error('Title maxlength: 20, Description maxlength: 100, please check!');
+                    wp_send_json_error('Description maxlength: 100, please check!');
                     return;
                 }
 
@@ -160,6 +165,7 @@ class CustomPost
                 if ($post_id) {
                     $response_data = array(
                         'success' => true,
+                        'message' => "Successfully saved!",
                         'id' => $post_id,
                         'title' => $title,
                         'description' => $description,
@@ -169,21 +175,23 @@ class CustomPost
                     wp_send_json_error('Failed to add video player. Please try again.');
                 }
             } else {
-                wp_send_json_error('Please provide a title.');
+                wp_send_json_error('Please provide a valid title.');
             }
         } else {
             wp_send_json_error('Invalid request or nonce verification failed.');
         }
     }
 
-    function clk_fetch_video_player()
+
+    public function clk_fetch_video_player()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $nonce && wp_verify_nonce($nonce, 'vue_clk_nonce')) {
             global $wpdb;
 
             $post_type = 'video_player';
             $query = $wpdb->prepare("
-            SELECT p.ID, p.post_title, p.post_content, CONCAT('[video_player id=\"', p.ID, '\"]') AS shortcode
+            SELECT p.ID, p.post_title, p.post_content
             FROM {$wpdb->prefix}posts AS p
             WHERE p.post_type = %s
         ", $post_type);
@@ -200,13 +208,16 @@ class CustomPost
         }
     }
 
-    function clk_delete_video_player()
+
+    public function clk_delete_video_player()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $nonce && wp_verify_nonce($nonce, 'vue_clk_nonce')) {
             global $wpdb;
 
             if (isset($_POST['id'])) {
-                $video_player_id = absint($_POST['id']);
+                $id = sanitize_text_field($_POST['id']);
+                $video_player_id = absint($id);
                 $result = wp_delete_post($video_player_id);
 
                 if ($result !== false) {
@@ -222,14 +233,14 @@ class CustomPost
         }
     }
 
-    function clk_save_video_player_setting()
+    public function clk_save_video_player_setting()
     {
         $nonce = sanitize_text_field($_POST['nonce']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$nonce || !wp_verify_nonce($_POST['nonce'], 'vue_clk_nonce')) {
             wp_send_json_error('Invalid nonce.');
         }
 
-        $video_player_id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $video_player_id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
 
         $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
         $description = isset($_POST['description']) ? sanitize_text_field($_POST['description']) : '';
@@ -280,10 +291,19 @@ class CustomPost
         wp_send_json($response_data);
     }
 
-
-    function clk_fetch_video_player_setting()
+    public function clk_fetch_video_player_setting()
     {
+        if (!isset($_POST['nonce']) || !isset($_POST['id'])) {
+            $response = array(
+                'success' => false,
+                'message' => 'Invalid request'
+            );
+            wp_send_json($response);
+        }
+
         $nonce = sanitize_text_field($_POST['nonce']);
+        $video_player_id = sanitize_text_field($_POST['id']);
+
         if (!wp_verify_nonce($nonce, 'vue_clk_nonce')) {
             $response = array(
                 'success' => false,
@@ -292,7 +312,6 @@ class CustomPost
             wp_send_json($response);
         }
 
-        $video_player_id = $_POST['id'];
         $settings = get_post_meta($video_player_id, 'video_player_settings', true);
 
         $title = get_the_title($video_player_id);
@@ -310,11 +329,11 @@ class CustomPost
                 'success' => true,
                 'title' => $title,
                 'description' => $description,
-                'audio' => $settings['audio'],
-                'autoplay' => $settings['autoplay'],
-                'controls' => $settings['controls'],
-                'player_size' => $settings['player_size'],
-                'video_url' => $settings['video_url'],
+                'audio' => isset($settings['audio']) ? $settings['audio'] : false,
+                'autoplay' => isset($settings['autoplay']) ? $settings['autoplay'] : false,
+                'controls' => isset($settings['controls']) ? $settings['controls'] : true,
+                'player_size' => isset($settings['player_size']) ? $settings['player_size'] : "small",
+                'video_url' => isset($settings['video_url']) ? $settings['video_url'] : '',
             );
         }
         wp_send_json($response);
