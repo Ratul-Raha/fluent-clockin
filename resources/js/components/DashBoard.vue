@@ -80,14 +80,16 @@
     >
       <div class="video-player-modal">
         <div class="form-group">
-          <span class="label">Title:</span>
+          <span class="label">Title*:</span>
           <input
             v-model="videoPlayerForm.title"
             type="text"
             maxlength="20"
             placeholder="Max 20 characters"
           />
-          <p v-if="!videoPlayerForm.title" class="error-message">Please provide a title.</p>
+          <p v-if="!videoPlayerForm.title" class="error-message">
+            Please provide a title.
+          </p>
         </div>
         <div class="form-group">
           <span class="label">Description:</span>
@@ -224,6 +226,7 @@ export default {
     cancelVideoPlayerForm() {
       this.videoPlayerModalVisible = false;
     },
+
     fetchVideoPlayers() {
       jQuery.ajax({
         url: clk_ajax.ajaxurl,
@@ -251,6 +254,7 @@ export default {
         },
       });
     },
+
     editVideoPlayer(row) {
       this.editVideoPlayerModalVisible = true;
       this.editedVideoPlayer.id = row.ID;
@@ -279,9 +283,11 @@ export default {
         },
       });
     },
+
     cancelEditVideoPlayerForm() {
       this.editVideoPlayerModalVisible = false;
     },
+
     saveEditedVideoPlayer() {
       const requiredFields = [
         "title",
@@ -356,6 +362,7 @@ export default {
         },
       });
     },
+
     deleteVideoPlayer(row) {
       if (confirm("Are you sure you want to delete this video player?")) {
         jQuery.ajax({
@@ -373,7 +380,7 @@ export default {
             ElNotification({
               title: "Success!",
               message: "Video Player deleted successfully",
-              type: 'success',
+              type: "success",
               duration: 4000,
               offset: 20,
             });
@@ -390,6 +397,7 @@ export default {
         });
       }
     },
+    
     copyShortcode(shortcode) {
       const el = document.createElement("textarea");
       el.value = shortcode;
@@ -397,7 +405,7 @@ export default {
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-       this.$message({
+      this.$message({
         message: "Shortcode copied to clipboard",
         type: "success",
         offset: 50,
