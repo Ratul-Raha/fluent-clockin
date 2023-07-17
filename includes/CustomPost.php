@@ -249,13 +249,17 @@ class CustomPost
             wp_send_json_error('All fields are required except Description.');
         }
 
-        if (strlen($title) > 20) {
+        if (strlen($title) > 20 && strlen($description) > 100) {
             wp_send_json_error('Title maxlength: 20, Description maxlength: 100, please check!');
+        }
+        
+        if (strlen($title) > 20) {
+            wp_send_json_error('Title maxlength: 20, please check!');
             return;
         }
 
         if (strlen($description) > 100) {
-            wp_send_json_error('Title maxlength: 20, Description maxlength: 100, please check!');
+            wp_send_json_error('Description maxlength: 100, please check!');
             return;
         }
 

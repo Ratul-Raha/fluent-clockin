@@ -98,9 +98,6 @@ export default {
     'editedVideoPlayer.autoplay': function (newVal) {
       if (newVal === 'yes') {
         this.editedVideoPlayer.audio = 'off';
-      } else {
-        // Otherwise, enable both audio options
-        // If you have other conditions or logic, you can add them here
       }
     },
   },
