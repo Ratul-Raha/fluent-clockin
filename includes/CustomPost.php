@@ -143,7 +143,7 @@ class CustomPost
                 $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
 
                 if (strlen($title) > 20 && strlen($description) > 100) {
-                    wp_send_json_error('Title maxlength: 20, Description maxlength: 100, please check!');
+                    wp_send_json_error('Max Length: Title(20), Description(100)');
                 }
 
                 if (strlen($title) > 20) {
@@ -175,7 +175,7 @@ class CustomPost
                     wp_send_json_error('Failed to add video player. Please try again.');
                 }
             } else {
-                wp_send_json_error('Please provide a valid title.');
+                wp_send_json_error('Please provide a valid title. hjklahdAHSDJ KAHSDKJHASJK Hsdkfhsd klfsdhjfjksdh jsdfhsdjkfh kjsdhfsjfh khsdjfsdh');
             }
         } else {
             wp_send_json_error('Invalid request or nonce verification failed.');
@@ -250,7 +250,7 @@ class CustomPost
         }
 
         if (strlen($title) > 20 && strlen($description) > 100) {
-            wp_send_json_error('Title maxlength: 20, Description maxlength: 100, please check!');
+            wp_send_json_error('Max Length: Title(20), Description(100)');
         }
         
         if (strlen($title) > 20) {

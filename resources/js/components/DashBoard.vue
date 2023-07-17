@@ -29,7 +29,8 @@
           v-if="displayedVideoPlayers.length > 0"
           border
         >
-          <el-table-column prop="ID" label="ID" sortable> </el-table-column>
+          <el-table-column prop="ID" label="ID" sortable width="100">
+          </el-table-column>
           <el-table-column prop="post_title" label="Title" sortable>
           </el-table-column>
           <el-table-column prop="post_content" label="Description" sortable>
@@ -190,7 +191,7 @@ export default {
           description: this.videoPlayerForm.description,
         },
         beforeSend: function (xhr) {
-          xhr.setRequestHeader("X-Action", "add_video_player");
+          xhr.setRequestHeader("X-Action", "clk_add_video_player");
         },
         success: (response) => {
           if (response.success === true) {
@@ -200,6 +201,7 @@ export default {
               duration: 4000,
               type: "success",
               offset: 20,
+              customClass: "left-aligned-notification",
             });
             this.fetchVideoPlayers();
             this.editVideoPlayerModalVisible = true;
@@ -214,6 +216,7 @@ export default {
               message: response.data,
               type: "error",
               offset: 20,
+              customClass: "left-aligned-notification",
             });
           }
         },
@@ -307,6 +310,7 @@ export default {
           title: "Error",
           message: "Please fill in all the required fields.",
           type: "error",
+          offset: 20,
         });
         return;
       }
@@ -397,7 +401,7 @@ export default {
         });
       }
     },
-    
+
     copyShortcode(shortcode) {
       const el = document.createElement("textarea");
       el.value = shortcode;
@@ -414,6 +418,12 @@ export default {
   },
 };
 </script>
+
+<style>
+.left-aligned-notification .el-notification__content {
+  text-align: left;
+}
+</style>
 
 <style scoped>
 .dashboard {
